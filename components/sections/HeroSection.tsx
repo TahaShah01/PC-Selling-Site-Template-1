@@ -1,182 +1,87 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Zap } from "lucide-react";
-import { Button } from "../primitives/Button";
+import Image from "next/image";
+import { motion, useReducedMotion } from "framer-motion";
 import { Container } from "../primitives/Container";
 
 /* ─────────────────────────────────────────────────────────
-   HOMEPAGE HERO SECTION
+   HERO
+   One oversized statement, a single supporting line, and a
+   quiet image bleed. No cards, no stat row, no badges.
 ───────────────────────────────────────────────────────── */
 
-const EASE_PREMIUM = [0.22, 1, 0.36, 1] as [number, number, number, number];
+const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number];
+
+const LINES = ["Your build,", "our bench."];
 
 export function HeroSection() {
-  const prefersReduced = useReducedMotion();
-  const { scrollY } = useScroll();
-  const yParallax = useTransform(scrollY, [0, 1000], [0, 150]);
-
-  const fadeUp = (delay = 0) =>
-    prefersReduced
-      ? {}
-      : {
-        initial: { opacity: 0, y: 32 },
-        animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.8, ease: EASE_PREMIUM, delay },
-      };
+  const reduced = useReducedMotion();
 
   return (
     <section
-      className="relative min-h-screen flex items-center overflow-hidden"
-      aria-label="Daddu Charger — Pakistan's Premium Gaming PC Store"
+      className="relative min-h-[92vh] flex flex-col justify-end overflow-hidden"
+      aria-label="Daddu Charger — custom gaming PCs, Rawalpindi"
     >
-      {/* ─── BACKGROUND ─── */}
-      <div className="absolute inset-0 z-0" aria-hidden="true">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_60%_50%,rgba(200,255,0,0.04)_0%,transparent_70%)]" />
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[var(--dc-bg)] to-transparent" />
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[var(--dc-bg)] to-transparent" />
+      {/* Image bleed, right half, low contrast */}
+      <div className="absolute inset-y-0 right-0 w-full lg:w-[52%] z-0" aria-hidden="true">
+        <Image
+          src="/hero-pc.jpg"
+          alt=""
+          fill
+          priority
+          quality={90}
+          sizes="(max-width: 1024px) 100vw, 52vw"
+          className="object-cover object-center opacity-[0.22] lg:opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--dc-bg)] via-[var(--dc-bg)]/60 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[var(--dc-bg)] to-transparent" />
       </div>
 
-      {/* ─── GRID OVERLAY ─── */}
-      <div
-        className="absolute inset-0 z-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(255,255,255,0.5) 80px), repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(255,255,255,0.5) 80px)",
-          backgroundSize: "80px 80px",
-        }}
-        aria-hidden="true"
-      />
+      <Container className="relative z-10 pt-[calc(var(--dc-header-height)+6rem)] pb-20">
+        <h1 className="font-display font-bold text-[var(--dc-text)] text-[clamp(2.75rem,9vw,8.5rem)] leading-[0.92] tracking-[-0.04em] max-w-[16ch]">
+          {LINES.map((line, i) => (
+            <span key={line} className="block overflow-hidden">
+              <motion.span
+                className="block"
+                initial={reduced ? undefined : { y: "110%" }}
+                animate={reduced ? undefined : { y: "0%" }}
+                transition={{ duration: 0.9, delay: 0.05 + i * 0.09, ease: EASE }}
+              >
+                {line}
+              </motion.span>
+            </span>
+          ))}
+        </h1>
 
-      {/* ─── CONTENT ─── */}
-      <Container className="relative z-10 pt-[calc(var(--dc-header-height)+2rem)] pb-24">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center min-h-[calc(100vh-8rem)]">
-
-          {/* ─── TEXT COLUMN ─── */}
-          <div className="flex flex-col justify-center">
-            {/* Eyebrow */}
-            <motion.div {...fadeUp(0)} className="flex items-center gap-2 mb-6">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--dc-accent)]">
-                <Zap size={12} fill="currentColor" />
-                Rawalpindi, Pakistan
-              </span>
-              <span className="h-px w-8 bg-[var(--dc-accent)] opacity-50" />
-              <span className="text-xs text-[var(--dc-text-subtle)] uppercase tracking-wider">
-                Est. Gaming Store
-              </span>
-            </motion.div>
-
-            {/* Headline */}
-            <motion.h1
-              {...fadeUp(0.1)}
-              className="text-[clamp(3rem,7vw,6.5rem)] font-display font-bold leading-[1.05] tracking-[-0.03em] text-[var(--dc-text)] mb-6"
-            >
-              Engineered{" "}
-              <span className="relative inline-block">
-                <span className="relative z-10 text-[var(--dc-accent)]">to Win.</span>
-                {!prefersReduced && (
-                  <motion.span
-                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[var(--dc-accent)] origin-left"
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: 0.8, delay: 0.6, ease: EASE_PREMIUM }}
-                  />
-                )}
-              </span>
-              <br />
-              Built for{" "}
-              <span className="text-[var(--dc-text-muted)]">You.</span>
-            </motion.h1>
-
-            {/* Subheadline */}
-            <motion.p
-              {...fadeUp(0.2)}
-              className="text-lg text-[var(--dc-text-muted)] leading-relaxed max-w-lg mb-10"
-            >
-              Pakistan&apos;s premier destination for custom-built gaming PCs,
-              high-performance components, and premium peripherals. Every build
-              crafted to your exact specifications.
-            </motion.p>
-
-            {/* CTAs */}
-            <motion.div
-              {...fadeUp(0.3)}
-              className="flex flex-wrap items-center gap-4"
-            >
-              <Button size="lg" variant="primary" rightIcon={<ArrowRight size={18} />}>
-                <Link href="/shop">Shop Now</Link>
-              </Button>
-              <Button size="lg" variant="secondary">
-                <Link href="/build-pc">Build Your PC</Link>
-              </Button>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-              {...fadeUp(0.4)}
-              className="flex gap-8 mt-14 pt-8 border-t border-[var(--dc-border)]"
-            >
-              {[
-                { value: "500+", label: "Products" },
-                { value: "PKR", label: "Local Currency" },
-                { value: "RWP", label: "Rawalpindi Based" },
-              ].map(({ value, label }) => (
-                <div key={label}>
-                  <p className="text-2xl font-display font-bold text-[var(--dc-text)] leading-none mb-1">
-                    {value}
-                  </p>
-                  <p className="text-xs text-[var(--dc-text-subtle)] uppercase tracking-wider">
-                    {label}
-                  </p>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* ─── IMAGE COLUMN ─── */}
-          <motion.div
-            initial={prefersReduced ? undefined : { opacity: 0, scale: 0.96, x: 40 }}
-            animate={prefersReduced ? undefined : { opacity: 1, scale: 1, x: 0 }}
-            transition={{ duration: 1, delay: 0.15, ease: EASE_PREMIUM }}
-            className="relative flex items-center justify-center lg:justify-end"
-            style={{ y: prefersReduced ? 0 : yParallax }}
-          >
-            <div
-              className="absolute inset-0 bg-[radial-gradient(ellipse_60%_70%_at_50%_50%,rgba(200,255,0,0.12)_0%,transparent_70%)]"
-              aria-hidden="true"
-            />
-            <div className="relative w-full max-w-lg aspect-[3/4]">
-              <Image
-                src="/hero-pc.jpg"
-                alt="Custom water-cooled gaming PC with volt green ARGB lighting — built by Daddu Charger, Rawalpindi"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-contain object-center"
-                priority
-                quality={90}
-              />
-            </div>
-          </motion.div>
-        </div>
-      </Container>
-
-      {/* ─── SCROLL INDICATOR ─── */}
-      {!prefersReduced && (
         <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          aria-hidden="true"
+          initial={reduced ? undefined : { opacity: 0 }}
+          animate={reduced ? undefined : { opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="mt-10 grid lg:grid-cols-12 gap-8 items-end"
         >
-          <span className="text-xs text-[var(--dc-text-subtle)] uppercase tracking-widest">
-            Scroll
-          </span>
-          <div className="w-px h-8 bg-gradient-to-b from-[var(--dc-text-subtle)] to-transparent" />
+          <p className="lg:col-span-5 text-base sm:text-lg text-[var(--dc-text-muted)] leading-relaxed max-w-[52ch]">
+            Custom gaming PCs assembled, tested and benchmarked in Rawalpindi.
+            Genuine parts, live PKR pricing, and someone to call afterwards.
+          </p>
+
+          <div className="lg:col-span-7 flex flex-wrap items-center gap-x-8 gap-y-4 lg:justify-end">
+            <Link
+              href="/build-pc"
+              className="group inline-flex items-baseline gap-3 text-lg text-[var(--dc-text)] border-b border-[var(--dc-text)] pb-1 hover:border-[var(--dc-accent)] hover:text-[var(--dc-accent)] transition-colors duration-[var(--dc-duration-fast)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--dc-accent)]"
+            >
+              Start a build
+            </Link>
+            <Link
+              href="/shop"
+              className="inline-flex items-baseline text-lg text-[var(--dc-text-muted)] border-b border-transparent pb-1 hover:text-[var(--dc-text)] hover:border-[var(--dc-border)] transition-colors duration-[var(--dc-duration-fast)]"
+            >
+              Shop parts
+            </Link>
+          </div>
         </motion.div>
-      )}
+      </Container>
     </section>
   );
 }
