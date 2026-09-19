@@ -25,7 +25,7 @@ export function VelocityMarquee({
     items = BUSINESS.featuredBrands,
     baseVelocity = 3,
 }: {
-    items?: string[];
+    items?: readonly string[];
     baseVelocity?: number;
 }) {
     const reduced = useReducedMotion();

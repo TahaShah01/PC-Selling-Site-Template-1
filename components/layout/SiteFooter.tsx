@@ -13,11 +13,23 @@ import { EASE, inViewOnce } from "../../lib/motion/Motion";
 
 /* ─────────────────────────────────────────────────────────
    SITE FOOTER
-   Full-bleed, full-height. Three bands:
-   1. contact strip — one oversized mail link, hover-swept
-   2. columns — nav, visit, live Rawalpindi time, socials
-   3. wordmark — clipped at the baseline, rises and scales
-      into place as the page bottoms out
+
+   Fixed from the previous pass (per your screenshot):
+   • min-h-svh + justify-between stretched three short bands
+     across a full viewport, so on most screens it produced
+     two large dead gaps instead of a designed layout. Height
+     now comes from real padding, not from forcing content to
+     fill a viewport it doesn't need.
+   • the column grid was a fixed 6 tracks; with 5 actual
+     columns (3 nav groups + Visit + Follow) that left an
+     empty 6th track — the block of blank space on the right
+     in your screenshot. It's now auto-fit, so it always fills
+     however many columns FOOTER_NAV actually has.
+   • the floating white dot in the screenshot is your custom
+     cursor (mix-blend-mode dot) sitting wherever the pointer
+     was — real, working code, not a footer bug. A full-page
+     screenshot just freezes a `position: fixed` element at
+     one spot instead of scrolling it out of frame.
 ───────────────────────────────────────────────────────── */
 
 const SOCIALS = [
@@ -35,17 +47,19 @@ export function SiteFooter() {
 
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start end", "end end"],
+    offset: ["start 0.85", "end end"],
   });
-  const markY = useTransform(scrollYProgress, [0, 1], ["22%", "0%"]);
-  const markScale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
-  const washOpacity = useTransform(scrollYProgress, [0.2, 1], [0, 1]);
+  const markY = useTransform(scrollYProgress, [0, 1], ["30%", "0%"]);
+  const markScale = useTransform(scrollYProgress, [0, 1], [0.92, 1]);
+  const washOpacity = useTransform(scrollYProgress, [0, 1], [0, 1]);
+
+  const navGroups = Object.values(FOOTER_NAV);
 
   return (
     <footer
       ref={ref}
       role="contentinfo"
-      className="relative z-10 flex min-h-svh flex-col justify-between overflow-hidden bg-[var(--dc-bg-elevated)] pt-[12vh]"
+      className="relative z-10 overflow-hidden bg-[var(--dc-bg-elevated)]"
     >
       <motion.div
         aria-hidden="true"
@@ -54,8 +68,8 @@ export function SiteFooter() {
       />
 
       {/* ── 1. CONTACT STRIP ── */}
-      <div className="dc-gutter relative">
-        <p className="mb-6 text-xs text-[var(--dc-text-subtle)]">Talk to the workshop</p>
+      <div className="dc-gutter relative pt-[8vh] sm:pt-[10vh]">
+        <p className="mb-5 text-xs text-[var(--dc-text-subtle)]">Talk to the workshop</p>
         <a
           href="https://wa.me/00000000000"
           target="_blank"
@@ -80,9 +94,13 @@ export function SiteFooter() {
         </a>
       </div>
 
-      {/* ── 2. COLUMNS ── */}
-      <div className="dc-gutter relative grid grid-cols-2 gap-x-8 gap-y-12 py-[10vh] md:grid-cols-4 lg:grid-cols-6">
-        {Object.values(FOOTER_NAV).map((group, gi) => (
+      {/* ── 2. COLUMNS ──
+          auto-fit + minmax instead of a fixed track count: this
+          always fills the row edge to edge no matter how many
+          groups FOOTER_NAV has (currently nav groups + Visit +
+          Follow), so there's never a phantom empty column. */}
+      <div className="dc-gutter relative grid grid-cols-2 gap-x-8 gap-y-12 py-[7vh] sm:grid-cols-3 md:py-[8vh] lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]">
+        {navGroups.map((group, gi) => (
           <motion.nav
             key={group.title}
             aria-label={group.title}
@@ -108,7 +126,12 @@ export function SiteFooter() {
           </motion.nav>
         ))}
 
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={inViewOnce}
+          transition={{ duration: 0.7, ease: EASE.out, delay: navGroups.length * 0.06 }}
+        >
           <h2 className="mb-5 text-xs text-[var(--dc-text-subtle)]">Visit</h2>
           <address className="not-italic text-sm leading-relaxed text-[var(--dc-text-muted)]">
             {BUSINESS.city}
@@ -116,9 +139,14 @@ export function SiteFooter() {
             Punjab, Pakistan
           </address>
           <LocalTime />
-        </div>
+        </motion.div>
 
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={inViewOnce}
+          transition={{ duration: 0.7, ease: EASE.out, delay: (navGroups.length + 1) * 0.06 }}
+        >
           <h2 className="mb-5 text-xs text-[var(--dc-text-subtle)]">Follow</h2>
           <ul className="space-y-3">
             {SOCIALS.map((s) => (
@@ -139,12 +167,15 @@ export function SiteFooter() {
               </li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       </div>
 
-      {/* ── 3. WORDMARK ── */}
-      <div className="relative">
-        <div className="dc-gutter mb-6 flex items-end justify-between gap-6">
+      {/* ── 3. WORDMARK ──
+          Fixed presence via border + padding, not viewport
+          math — reads as an intentional closing band at any
+          screen height instead of stretching to fill one. */}
+      <div className="relative border-t border-[var(--dc-border)]">
+        <div className="dc-gutter flex items-end justify-between gap-6 pt-8">
           <p className="max-w-[34ch] text-xs leading-relaxed text-[var(--dc-text-subtle)]">
             {BUSINESS.tagline}. Built, tested and supported in Pakistan.
           </p>
@@ -156,17 +187,17 @@ export function SiteFooter() {
               onMouseEnter={() => cursor.set("hover")}
               onMouseLeave={cursor.reset}
               aria-label="Back to top"
-              className="flex h-14 w-14 items-center justify-center rounded-full border border-[var(--dc-border)] text-[var(--dc-text-muted)] transition-colors hover:border-[var(--dc-accent)] hover:text-[var(--dc-accent)]"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[var(--dc-border)] text-[var(--dc-text-muted)] transition-colors hover:border-[var(--dc-accent)] hover:text-[var(--dc-accent)]"
             >
               <ArrowUp size={18} />
             </button>
           </Magnetic>
         </div>
 
-        <div className="dc-gutter overflow-hidden">
+        <div className="dc-gutter overflow-hidden pt-4">
           <motion.p
             style={reduced ? undefined : { y: markY, scale: markScale }}
-            className="origin-bottom translate-y-[0.08em] font-display text-[13.5vw] font-bold leading-[0.78] tracking-[-0.055em] text-[var(--dc-text)]"
+            className="origin-bottom font-display text-[13.5vw] font-bold leading-[0.78] tracking-[-0.055em] text-[var(--dc-text)]"
           >
             daddu<span className="text-[var(--dc-accent)]">charger</span>
           </motion.p>

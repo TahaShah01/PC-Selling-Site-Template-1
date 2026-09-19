@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Heart, ShoppingBag } from "lucide-react";
+import { Search, Heart, ShoppingBag, ArrowLeft } from "lucide-react";
 import {
   motion,
   AnimatePresence,
@@ -18,18 +18,28 @@ import { useCartStore } from "@/lib/store/cart";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { useCursor } from "../motion/Cursor";
 import { Magnetic } from "../motion/Reveal";
+import { useScrollLock } from "../providers/SmoothScrollProvider";
 import { EASE } from "../../lib/motion/Motion";
 
 /* ─────────────────────────────────────────────────────────
    SITE HEADER
-   Full-bleed, gutter-aligned with every section.
 
-   • hides on scroll down, returns on scroll up
-   • transparent over the hero, blurs once you leave it
-   • nav labels swap on hover (two stacked copies)
-   • a parent item opens a FULL-SCREEN menu, not a dropdown
-   • mobile opens the same full-screen surface
+   Fixes from the previous pass:
+   • the full-screen menu used to close the instant your
+     pointer left the 80px header — i.e. the moment you moved
+     down to actually click a category. Closing is now
+     debounced across a shared hover zone (header + overlay),
+     so crossing the gap between them no longer kills it.
+   • scroll locking now goes through Lenis (useScrollLock)
+     instead of hand-toggling documentElement.overflow, so the
+     page can't double-scroll under an open overlay.
+   • mobile had no way to reach anything with children — Shop
+     was simply missing on phones. It now drills down into a
+     second full-screen level with a back control.
+   • trigger buttons carry aria-expanded / aria-haspopup.
 ───────────────────────────────────────────────────────── */
+
+const CLOSE_DELAY = 180;
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -40,6 +50,9 @@ export function SiteHeader() {
   const [solid, setSolid] = React.useState(false);
   const [menu, setMenu] = React.useState<NavItem | null>(null);
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [mobileLevel, setMobileLevel] = React.useState<NavItem | null>(null);
+
+  const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const itemCount = useCartStore((s) => s.cart.itemCount);
   const isCartOpen = useCartStore((s) => s.isOpen);
@@ -57,32 +70,45 @@ export function SiteHeader() {
     last.current = y;
   });
 
-  // Close overlays on navigation
+  const openMenu = React.useCallback((item: NavItem) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setMenu(item);
+  }, []);
+
+  const scheduleClose = React.useCallback(() => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setMenu(null), CLOSE_DELAY);
+  }, []);
+
+  const cancelClose = React.useCallback(() => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
+
+  React.useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
+
+  // Close everything on navigation
   React.useEffect(() => {
     setMenu(null);
     setMobileOpen(false);
+    setMobileLevel(null);
   }, [pathname]);
 
-  // Escape closes overlays
+  // Escape closes whatever is open
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setMenu(null);
-        setMobileOpen(false);
-      }
+      if (e.key !== "Escape") return;
+      setMenu(null);
+      if (mobileLevel) setMobileLevel(null);
+      else setMobileOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [mobileLevel]);
 
   const overlayOpen = Boolean(menu) || mobileOpen;
-
-  React.useEffect(() => {
-    document.documentElement.style.overflow = overlayOpen ? "hidden" : "";
-    return () => {
-      document.documentElement.style.overflow = "";
-    };
-  }, [overlayOpen]);
+  useScrollLock(overlayOpen);
 
   return (
     <>
@@ -97,15 +123,18 @@ export function SiteHeader() {
             ? "border-b border-[var(--dc-border)] bg-[rgba(8,8,8,0.72)] backdrop-blur-2xl"
             : "border-b border-transparent bg-transparent"
         )}
-        onMouseLeave={() => setMenu(null)}
       >
         <div className="dc-gutter flex h-[var(--dc-header-height)] items-center justify-between gap-6">
           {/* ── LOGO ── */}
           <Link
             href="/"
             aria-label="Daddu Charger — home"
-            className="group flex shrink-0 items-center gap-2.5"
-            onMouseEnter={() => cursor.set("hover")}
+            className="flex shrink-0 items-center gap-2.5"
+            onMouseEnter={() => {
+              cancelClose();
+              setMenu(null);
+              cursor.set("hover");
+            }}
             onMouseLeave={cursor.reset}
           >
             <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--dc-radius-md)] bg-[var(--dc-accent)]">
@@ -130,10 +159,10 @@ export function SiteHeader() {
           <nav aria-label="Primary" className="hidden lg:block">
             <ul className="flex items-center gap-1">
               {PRIMARY_NAV.map((item) => {
+                const hasChildren = Boolean(item.children?.length);
                 const active =
                   pathname === item.href ||
-                  (Boolean(item.children?.length) && pathname.startsWith(item.href + "/"));
-                const hasChildren = Boolean(item.children?.length);
+                  (hasChildren && pathname.startsWith(item.href + "/"));
 
                 if (item.isHighlighted) {
                   return (
@@ -142,6 +171,7 @@ export function SiteHeader() {
                         <Link
                           href={item.href}
                           onMouseEnter={() => {
+                            cancelClose();
                             setMenu(null);
                             cursor.set("hover");
                           }}
@@ -157,16 +187,14 @@ export function SiteHeader() {
                 }
 
                 return (
-                  <li
-                    key={item.href}
-                    onMouseEnter={() => setMenu(hasChildren ? item : null)}
-                  >
+                  <li key={item.href} onMouseEnter={() => hasChildren && openMenu(item)}>
                     <NavLabel
                       href={item.href}
                       label={item.label}
                       active={active || menu?.href === item.href}
-                      asButton={hasChildren}
-                      onClick={() => hasChildren && setMenu(menu?.href === item.href ? null : item)}
+                      hasChildren={hasChildren}
+                      expanded={menu?.href === item.href}
+                      onClick={() => hasChildren && (menu?.href === item.href ? setMenu(null) : openMenu(item))}
                     />
                   </li>
                 );
@@ -187,7 +215,11 @@ export function SiteHeader() {
               type="button"
               onClick={() => setIsCartOpen(true)}
               aria-label={`Cart, ${itemCount} item${itemCount === 1 ? "" : "s"}`}
-              onMouseEnter={() => cursor.set("hover")}
+              onMouseEnter={() => {
+                cancelClose();
+                setMenu(null);
+                cursor.set("hover");
+              }}
               onMouseLeave={cursor.reset}
               className="relative flex h-10 items-center gap-2 rounded-full px-3 text-[var(--dc-text-muted)] transition-colors hover:text-[var(--dc-text)]"
             >
@@ -213,7 +245,7 @@ export function SiteHeader() {
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
               aria-expanded={mobileOpen}
-              aria-controls="dc-menu"
+              aria-controls="dc-mobile-menu"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               onMouseEnter={() => cursor.set("hover")}
               onMouseLeave={cursor.reset}
@@ -234,7 +266,11 @@ export function SiteHeader() {
         </div>
       </motion.header>
 
-      {/* ── FULL-SCREEN MEGA MENU (desktop) ── */}
+      {/* ── FULL-SCREEN MEGA MENU (desktop) ──
+          Shares the same hover zone as the header via
+          openMenu/scheduleClose/cancelClose, so moving the
+          pointer from the nav link, through the gap, into
+          this panel never triggers a close. */}
       <AnimatePresence>
         {menu && (
           <motion.div
@@ -243,7 +279,8 @@ export function SiteHeader() {
             animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
             exit={{ clipPath: "inset(0% 0% 100% 0%)" }}
             transition={{ duration: 0.65, ease: EASE.out }}
-            onMouseLeave={() => setMenu(null)}
+            onMouseEnter={cancelClose}
+            onMouseLeave={scheduleClose}
             className="fixed inset-0 z-[var(--dc-z-overlay)] hidden bg-[var(--dc-bg-elevated)] lg:block"
           >
             <div className="dc-gutter flex h-full flex-col justify-center pt-[var(--dc-header-height)]">
@@ -279,11 +316,11 @@ export function SiteHeader() {
         )}
       </AnimatePresence>
 
-      {/* ── FULL-SCREEN MOBILE MENU ── */}
+      {/* ── FULL-SCREEN MOBILE MENU — two levels ── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            id="dc-menu"
+            id="dc-mobile-menu"
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
@@ -291,45 +328,119 @@ export function SiteHeader() {
             animate={{ clipPath: "circle(150% at calc(100% - 3rem) 2.5rem)" }}
             exit={{ clipPath: "circle(0% at calc(100% - 3rem) 2.5rem)" }}
             transition={{ duration: 0.75, ease: EASE.out }}
-            className="fixed inset-0 z-[var(--dc-z-overlay)] overflow-y-auto bg-[var(--dc-bg-elevated)] lg:hidden"
+            className="fixed inset-0 z-[var(--dc-z-overlay)] overflow-hidden bg-[var(--dc-bg-elevated)] lg:hidden"
           >
-            <div className="dc-gutter flex min-h-full flex-col justify-between pb-10 pt-[calc(var(--dc-header-height)+2rem)]">
-              <ul>
-                {PRIMARY_NAV.map((item, i) => (
-                  <li key={item.href} className="overflow-hidden border-b border-[var(--dc-border)]">
-                    <motion.div
-                      initial={{ y: "110%", opacity: 0 }}
-                      animate={{ y: "0%", opacity: 1 }}
-                      transition={{ duration: 0.7, ease: EASE.out, delay: 0.15 + i * 0.06 }}
-                    >
-                      <Link
-                        href={item.href}
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-baseline justify-between py-5"
-                      >
-                        <span className="font-display text-[clamp(2rem,9vw,3.5rem)] font-bold leading-none tracking-[-0.04em] text-[var(--dc-text)]">
-                          {item.label}
-                        </span>
-                        <span className="text-xs tabular-nums text-[var(--dc-text-subtle)]">
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                      </Link>
-                    </motion.div>
-                  </li>
-                ))}
-              </ul>
+            <div className="relative h-full overflow-y-auto">
+              <AnimatePresence mode="wait" initial={false}>
+                {!mobileLevel ? (
+                  <motion.div
+                    key="level-0"
+                    initial={{ x: "-30%", opacity: 0 }}
+                    animate={{ x: "0%", opacity: 1 }}
+                    exit={{ x: "-30%", opacity: 0 }}
+                    transition={{ duration: 0.4, ease: EASE.out }}
+                    className="dc-gutter flex min-h-full flex-col justify-between pb-10 pt-[calc(var(--dc-header-height)+2rem)]"
+                  >
+                    <ul>
+                      {PRIMARY_NAV.map((item, i) => {
+                        const hasChildren = Boolean(item.children?.length);
+                        return (
+                          <li key={item.href} className="overflow-hidden border-b border-[var(--dc-border)]">
+                            <motion.div
+                              initial={{ y: "110%", opacity: 0 }}
+                              animate={{ y: "0%", opacity: 1 }}
+                              transition={{ duration: 0.7, ease: EASE.out, delay: 0.15 + i * 0.06 }}
+                            >
+                              {hasChildren ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setMobileLevel(item)}
+                                  className="flex w-full items-baseline justify-between py-5 text-left"
+                                >
+                                  <span className="font-display text-[clamp(2rem,9vw,3.5rem)] font-bold leading-none tracking-[-0.04em] text-[var(--dc-text)]">
+                                    {item.label}
+                                  </span>
+                                  <span className="text-xs tabular-nums text-[var(--dc-text-subtle)]">
+                                    {String(i + 1).padStart(2, "0")}
+                                  </span>
+                                </button>
+                              ) : (
+                                <Link
+                                  href={item.href}
+                                  onClick={() => setMobileOpen(false)}
+                                  className="flex items-baseline justify-between py-5"
+                                >
+                                  <span className="font-display text-[clamp(2rem,9vw,3.5rem)] font-bold leading-none tracking-[-0.04em] text-[var(--dc-text)]">
+                                    {item.label}
+                                  </span>
+                                  <span className="text-xs tabular-nums text-[var(--dc-text-subtle)]">
+                                    {String(i + 1).padStart(2, "0")}
+                                  </span>
+                                </Link>
+                              )}
+                            </motion.div>
+                          </li>
+                        );
+                      })}
+                    </ul>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                className="mt-12 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--dc-text-muted)]"
-              >
-                <Link href="/search" onClick={() => setMobileOpen(false)}>Search</Link>
-                <Link href="/wishlist" onClick={() => setMobileOpen(false)}>Wishlist</Link>
-                <Link href="/contact" onClick={() => setMobileOpen(false)}>Contact</Link>
-                <span className="text-[var(--dc-text-subtle)]">Rawalpindi, PK</span>
-              </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.5 }}
+                      className="mt-12 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--dc-text-muted)]"
+                    >
+                      <Link href="/search" onClick={() => setMobileOpen(false)}>Search</Link>
+                      <Link href="/wishlist" onClick={() => setMobileOpen(false)}>Wishlist</Link>
+                      <Link href="/contact" onClick={() => setMobileOpen(false)}>Contact</Link>
+                      <span className="text-[var(--dc-text-subtle)]">Rawalpindi, PK</span>
+                    </motion.div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key={mobileLevel.href}
+                    initial={{ x: "30%", opacity: 0 }}
+                    animate={{ x: "0%", opacity: 1 }}
+                    exit={{ x: "30%", opacity: 0 }}
+                    transition={{ duration: 0.4, ease: EASE.out }}
+                    className="dc-gutter flex min-h-full flex-col pb-10 pt-[calc(var(--dc-header-height)+1.5rem)]"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setMobileLevel(null)}
+                      className="mb-8 flex items-center gap-2 text-sm text-[var(--dc-text-muted)]"
+                    >
+                      <ArrowLeft size={16} />
+                      {mobileLevel.label}
+                    </button>
+
+                    <ul>
+                      {mobileLevel.children!.map((child, i) => (
+                        <li key={child.href} className="overflow-hidden border-b border-[var(--dc-border)]">
+                          <motion.div
+                            initial={{ y: "60%", opacity: 0 }}
+                            animate={{ y: "0%", opacity: 1 }}
+                            transition={{ duration: 0.55, ease: EASE.out, delay: i * 0.05 }}
+                          >
+                            <Link
+                              href={child.href}
+                              onClick={() => setMobileOpen(false)}
+                              className="flex items-baseline justify-between py-5"
+                            >
+                              <span className="font-display text-[clamp(1.5rem,6vw,2.5rem)] font-semibold leading-none tracking-[-0.03em] text-[var(--dc-text)]">
+                                {child.label}
+                              </span>
+                              <span className="text-xs tabular-nums text-[var(--dc-text-subtle)]">
+                                {String(i + 1).padStart(2, "0")}
+                              </span>
+                            </Link>
+                          </motion.div>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}
@@ -345,13 +456,15 @@ function NavLabel({
   href,
   label,
   active,
-  asButton,
+  hasChildren,
+  expanded,
   onClick,
 }: {
   href: string;
   label: string;
   active: boolean;
-  asButton: boolean;
+  hasChildren: boolean;
+  expanded: boolean;
   onClick?: () => void;
 }) {
   const cursor = useCursor();
@@ -377,8 +490,15 @@ function NavLabel({
     onMouseLeave: cursor.reset,
   };
 
-  return asButton ? (
-    <button type="button" onClick={onClick} className={className} {...handlers}>
+  return hasChildren ? (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-haspopup="true"
+      aria-expanded={expanded}
+      className={className}
+      {...handlers}
+    >
       {inner}
     </button>
   ) : (
