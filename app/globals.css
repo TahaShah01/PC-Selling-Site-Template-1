@@ -5,7 +5,9 @@
    BASE RESET + GLOBAL STYLES
 ───────────────────────────────────────────────────────── */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -13,7 +15,8 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-size-adjust: 100%;
-  scroll-behavior: auto; /* Lenis handles smooth scroll */
+  scroll-behavior: auto;
+  /* Lenis handles smooth scroll */
   height: 100%;
 }
 
@@ -31,7 +34,12 @@ body {
    TYPOGRAPHY DEFAULTS
 ───────────────────────────────────────────────────────── */
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--dc-font-display);
   font-weight: var(--dc-weight-bold);
   line-height: var(--dc-leading-tight);
@@ -56,7 +64,8 @@ button {
   font-family: inherit;
 }
 
-img, video {
+img,
+video {
   max-width: 100%;
   height: auto;
   display: block;
@@ -144,7 +153,10 @@ img, video {
 ───────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -177,4 +189,109 @@ img, video {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   FULL-BLEED LAYER — v2, reconciled against your globals.css
+   Paste at the END of app/globals.css (after .sr-only).
+
+   Overrides --dc-gutter and --dc-header-height from tokens.css,
+   and widens .dc-container / .dc-container-wide to full width.
+   Your .dc-container-narrow is untouched — still a real
+   centred column for long-form pages.
+───────────────────────────────────────────────────────── */
+
+:root {
+  /* Overrides tokens.css: was a fixed value, now scales with viewport. */
+  --dc-gutter: clamp(1.25rem, 4.5vw, 4.5rem);
+
+  /* Overrides tokens.css if it differs — confirm against your token file. */
+  --dc-header-height: 5rem;
+  --dc-header-height-mobile: 4.25rem;
+
+  /* Reading width, used only where prose would otherwise run
+     past 80ch on a wide screen — not a container replacement. */
+  --dc-measure: 68ch;
+}
+
+/* Full width, gutter padding, no cage — wins over the
+   max-width:var(--dc-container) rule earlier in this file. */
+.dc-container,
+.dc-container-wide {
+  max-width: none;
+  margin-inline: 0;
+}
+
+/* dc-container-narrow (already in your file) stays as-is:
+   the one place you still want a centred column. */
+
+/* ── Screen-height sections ──
+   Add to any section that should own a viewport. svh keeps
+   it honest on mobile when the URL bar collapses. */
+.dc-screen {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Full-bleed escape hatch for media/rails nested inside a
+   padded parent that must touch the edges. */
+.dc-bleed {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+/* ── Scroll behaviour ── */
+html {
+  scroll-padding-top: var(--dc-header-height);
+}
+
+body {
+  overscroll-behavior-y: none;
+}
+
+/* Lenis needs these or the page double-scrolls. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ── Type scale for the wider canvas ──
+   Your h1–h6 defaults are unchanged; these are opt-in
+   utilities for display type that needs more top end at
+   full bleed than it needed inside the old container. */
+.dc-display-xl {
+  font-size: clamp(3rem, 13vw, 14rem);
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+}
+
+.dc-display-lg {
+  font-size: clamp(2.25rem, 8vw, 8rem);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+}
+
+.dc-display-md {
+  font-size: clamp(1.75rem, 4.5vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.dc-measure {
+  max-width: var(--dc-measure);
+}
+
+/* Elements animated on scroll — promote once, not per frame. */
+.dc-will-animate {
+  will-change: transform, opacity;
 }
