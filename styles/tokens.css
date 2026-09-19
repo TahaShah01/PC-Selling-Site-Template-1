@@ -1,0 +1,180 @@
+/* ============================================================
+   DADDU CHARGER — DESIGN TOKENS
+   DO NOT use arbitrary values outside these tokens.
+   See /docs/DESIGN_SYSTEM.md for usage reference.
+   ============================================================ */
+
+:root {
+
+  /* ─────────────────────────────────────────────────────────
+     BACKGROUNDS
+  ───────────────────────────────────────────────────────── */
+  --dc-bg: #080808;
+  --dc-bg-elevated: #0E0E0E;
+  --dc-surface: #141414;
+  --dc-surface-2: #1C1C1C;
+  --dc-surface-3: #242424;
+  --dc-card: #111111;
+  --dc-card-hover: #161616;
+  --dc-overlay: rgba(8, 8, 8, 0.85);
+  --dc-scrim: rgba(8, 8, 8, 0.95);
+
+  /* ─────────────────────────────────────────────────────────
+     TEXT
+  ───────────────────────────────────────────────────────── */
+  --dc-text: #F2F2ED;
+  --dc-text-muted: #A0A09B;
+  --dc-text-subtle: #6B6B66;
+  --dc-text-inverse: #080808;
+
+  /* ─────────────────────────────────────────────────────────
+     BORDERS
+  ───────────────────────────────────────────────────────── */
+  --dc-border: rgba(255, 255, 255, 0.08);
+  --dc-border-strong: rgba(255, 255, 255, 0.16);
+  --dc-border-accent: rgba(200, 255, 0, 0.3);
+
+  /* ─────────────────────────────────────────────────────────
+     PRIMARY ACCENT — VOLT GREEN
+  ───────────────────────────────────────────────────────── */
+  --dc-accent: #C8FF00;
+  --dc-accent-hover: #D6FF2A;
+  --dc-accent-dim: rgba(200, 255, 0, 0.15);
+  --dc-accent-text: #080808;
+
+  /* ─────────────────────────────────────────────────────────
+     SECONDARY ACCENT — EMBER ORANGE
+  ───────────────────────────────────────────────────────── */
+  --dc-accent-2: #FF6A1A;
+  --dc-accent-2-hover: #FF8040;
+  --dc-accent-2-dim: rgba(255, 106, 26, 0.15);
+
+  /* ─────────────────────────────────────────────────────────
+     STATUS COLORS
+  ───────────────────────────────────────────────────────── */
+  --dc-success: #22C55E;
+  --dc-warning: #F59E0B;
+  --dc-error: #EF4444;
+  --dc-info: #3B82F6;
+
+  /* ─────────────────────────────────────────────────────────
+     TYPOGRAPHY — FAMILIES
+  ───────────────────────────────────────────────────────── */
+  --dc-font-display: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
+  --dc-font-body: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --dc-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ─────────────────────────────────────────────────────────
+     TYPOGRAPHY — SCALE (FLUID)
+  ───────────────────────────────────────────────────────── */
+  --dc-text-display-2xl: clamp(4rem, 10vw, 9rem);
+  --dc-text-display-xl: clamp(3rem, 7vw, 6.5rem);
+  --dc-text-display-lg: clamp(2.25rem, 5vw, 4.5rem);
+  --dc-text-display-md: clamp(1.75rem, 3.5vw, 3rem);
+  --dc-text-xl: 1.25rem;
+  --dc-text-lg: 1.125rem;
+  --dc-text-base: 1rem;
+  --dc-text-sm: 0.875rem;
+  --dc-text-xs: 0.75rem;
+  --dc-text-2xs: 0.6875rem;
+
+  /* ─────────────────────────────────────────────────────────
+     TYPOGRAPHY — WEIGHTS
+  ───────────────────────────────────────────────────────── */
+  --dc-weight-regular: 400;
+  --dc-weight-medium: 500;
+  --dc-weight-semibold: 600;
+  --dc-weight-bold: 700;
+  --dc-weight-extrabold: 800;
+
+  /* ─────────────────────────────────────────────────────────
+     TYPOGRAPHY — LINE HEIGHTS
+  ───────────────────────────────────────────────────────── */
+  --dc-leading-tight: 1.1;
+  --dc-leading-snug: 1.25;
+  --dc-leading-normal: 1.5;
+  --dc-leading-relaxed: 1.75;
+
+  /* ─────────────────────────────────────────────────────────
+     TYPOGRAPHY — LETTER SPACING
+  ───────────────────────────────────────────────────────── */
+  --dc-tracking-tighter: -0.04em;
+  --dc-tracking-tight: -0.02em;
+  --dc-tracking-normal: 0em;
+  --dc-tracking-wide: 0.05em;
+  --dc-tracking-wider: 0.1em;
+
+  /* ─────────────────────────────────────────────────────────
+     SPACING
+  ───────────────────────────────────────────────────────── */
+  --dc-space-section: clamp(3.5rem, 10vw, 7.5rem);
+  --dc-space-block: 2.5rem;
+  --dc-space-card: 1.5rem;
+  --dc-space-tight: 1rem;
+  --dc-space-micro: 0.5rem;
+
+  /* ─────────────────────────────────────────────────────────
+     LAYOUT
+  ───────────────────────────────────────────────────────── */
+  --dc-container: 1440px;
+  --dc-container-wide: 1600px;
+  --dc-container-narrow: 768px;
+  --dc-gutter: clamp(1rem, 5vw, 5rem);
+
+  /* ─────────────────────────────────────────────────────────
+     BORDER RADIUS
+  ───────────────────────────────────────────────────────── */
+  --dc-radius-sm: 4px;
+  --dc-radius-md: 8px;
+  --dc-radius-lg: 12px;
+  --dc-radius-xl: 16px;
+  --dc-radius-2xl: 24px;
+  --dc-radius-full: 9999px;
+
+  /* ─────────────────────────────────────────────────────────
+     SHADOWS
+  ───────────────────────────────────────────────────────── */
+  --dc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --dc-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --dc-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+  --dc-shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.8);
+  --dc-shadow-accent: 0 0 24px rgba(200, 255, 0, 0.2);
+  --dc-shadow-accent-strong: 0 0 48px rgba(200, 255, 0, 0.4);
+
+  /* ─────────────────────────────────────────────────────────
+     Z-INDEX
+  ───────────────────────────────────────────────────────── */
+  --dc-z-base: 0;
+  --dc-z-raised: 10;
+  --dc-z-dropdown: 100;
+  --dc-z-sticky: 200;
+  --dc-z-overlay: 300;
+  --dc-z-modal: 400;
+  --dc-z-toast: 500;
+  --dc-z-cursor: 600;
+
+  /* ─────────────────────────────────────────────────────────
+     MOTION — EASING
+  ───────────────────────────────────────────────────────── */
+  --dc-ease-linear: linear;
+  --dc-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dc-ease-in: cubic-bezier(0.64, 0, 0.78, 0);
+  --dc-ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --dc-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ─────────────────────────────────────────────────────────
+     MOTION — DURATIONS
+  ───────────────────────────────────────────────────────── */
+  --dc-duration-instant: 80ms;
+  --dc-duration-fast: 180ms;
+  --dc-duration-normal: 320ms;
+  --dc-duration-slow: 500ms;
+  --dc-duration-slower: 700ms;
+  --dc-duration-cinematic: 1000ms;
+
+  /* ─────────────────────────────────────────────────────────
+     HEADER
+  ───────────────────────────────────────────────────────── */
+  --dc-header-height: 72px;
+  --dc-header-height-mobile: 60px;
+}

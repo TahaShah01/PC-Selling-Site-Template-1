@@ -1,26 +1,180 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─────────────────────────────────────────────────────────
+   BASE RESET + GLOBAL STYLES
+───────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
+  scroll-behavior: auto; /* Lenis handles smooth scroll */
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--dc-bg);
+  color: var(--dc-text);
+  font-family: var(--dc-font-body);
+  font-size: var(--dc-text-base);
+  line-height: var(--dc-leading-normal);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────
+   TYPOGRAPHY DEFAULTS
+───────────────────────────────────────────────────────── */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--dc-font-display);
+  font-weight: var(--dc-weight-bold);
+  line-height: var(--dc-leading-tight);
+  letter-spacing: var(--dc-tracking-tight);
+  color: var(--dc-text);
+}
+
+p {
+  color: var(--dc-text-muted);
+  line-height: var(--dc-leading-relaxed);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SELECTION
+───────────────────────────────────────────────────────── */
+
+::selection {
+  background: var(--dc-accent);
+  color: var(--dc-accent-text);
+}
+
+/* ─────────────────────────────────────────────────────────
+   FOCUS VISIBLE
+───────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--dc-accent);
+  outline-offset: 3px;
+  border-radius: var(--dc-radius-sm);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SCROLLBAR STYLING
+───────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dc-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--dc-surface-3);
+  border-radius: var(--dc-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dc-text-subtle);
+}
+
+/* ─────────────────────────────────────────────────────────
+   LAYOUT UTILITIES
+───────────────────────────────────────────────────────── */
+
+.dc-container {
+  width: 100%;
+  max-width: var(--dc-container);
+  margin-inline: auto;
+  padding-inline: var(--dc-gutter);
+}
+
+.dc-container-wide {
+  width: 100%;
+  max-width: var(--dc-container-wide);
+  margin-inline: auto;
+  padding-inline: var(--dc-gutter);
+}
+
+.dc-container-narrow {
+  width: 100%;
+  max-width: var(--dc-container-narrow);
+  margin-inline: auto;
+  padding-inline: var(--dc-gutter);
+}
+
+/* ─────────────────────────────────────────────────────────
+   SECTION SPACING
+───────────────────────────────────────────────────────── */
+
+.dc-section {
+  padding-block: var(--dc-space-section);
+}
+
+/* ─────────────────────────────────────────────────────────
+   REDUCED MOTION
+───────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+   UTILITY CLASSES
+───────────────────────────────────────────────────────── */
+
+/* Eyebrow label above headlines */
+.dc-eyebrow {
+  font-family: var(--dc-font-body);
+  font-size: var(--dc-text-xs);
+  font-weight: var(--dc-weight-semibold);
+  letter-spacing: var(--dc-tracking-wider);
+  text-transform: uppercase;
+  color: var(--dc-accent);
+}
+
+/* Visually hidden (accessible) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
