@@ -27,6 +27,9 @@ import { ClosingCTA } from "../components/sections/ClosingCTA";
 ───────────────────────────────────────────────────────── */
 
 export default function HomePage() {
+  // Start as false so Hero always enters from its initial (hidden) state.
+  // The Preloader calls setReady(true) once it exits — first-visit via the
+  // full animation sequence, repeat-visits via the 120ms fast-exit path.
   const [ready, setReady] = React.useState(false);
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });

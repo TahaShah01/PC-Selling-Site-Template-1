@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Heart, ShoppingBag, ArrowLeft } from "lucide-react";
+import { Search, Heart, ShoppingBag, ArrowLeft, X } from "lucide-react";
 import {
   motion,
   AnimatePresence,
@@ -24,22 +24,19 @@ import { EASE } from "../../lib/motion/Motion";
 /* ─────────────────────────────────────────────────────────
    SITE HEADER
 
-   Fixes from the previous pass:
-   • the full-screen menu used to close the instant your
-     pointer left the 80px header — i.e. the moment you moved
-     down to actually click a category. Closing is now
-     debounced across a shared hover zone (header + overlay),
-     so crossing the gap between them no longer kills it.
-   • scroll locking now goes through Lenis (useScrollLock)
-     instead of hand-toggling documentElement.overflow, so the
-     page can't double-scroll under an open overlay.
-   • mobile had no way to reach anything with children — Shop
-     was simply missing on phones. It now drills down into a
-     second full-screen level with a back control.
-   • trigger buttons carry aria-expanded / aria-haspopup.
+   Changes from previous pass:
+   • Mega menu is now a contained panel (~70vh) anchored to
+     the header — NOT a full-screen takeover. There's ample
+     room beneath to mouse out naturally, and a dedicated
+     close strip at the top-right of the panel.
+   • Click-outside (the overlay scrim below the panel) closes it.
+   • "Build Your PC" button text is forced to --dc-accent-text
+     (near-black #080808) with a fallback to ensure visibility
+     regardless of other CSS layers.
+   • Clip-path animation smoothed and tuned to 0.5s.
 ───────────────────────────────────────────────────────── */
 
-const CLOSE_DELAY = 180;
+const CLOSE_DELAY = 200;
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -82,6 +79,11 @@ export function SiteHeader() {
 
   const cancelClose = React.useCallback(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
+
+  const closeMenu = React.useCallback(() => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setMenu(null);
   }, []);
 
   React.useEffect(() => () => {
@@ -176,10 +178,11 @@ export function SiteHeader() {
                             cursor.set("hover");
                           }}
                           onMouseLeave={cursor.reset}
-                          className="group relative inline-flex h-10 items-center overflow-hidden rounded-full bg-[var(--dc-accent)] px-5 text-sm font-semibold text-[var(--dc-accent-text)]"
+                          className="group relative inline-flex h-10 items-center overflow-hidden rounded-full bg-[var(--dc-accent)] px-5 text-sm font-semibold"
+                          style={{ color: "var(--dc-accent-text)" }}
                         >
-                          <span className="relative z-10">{item.label}</span>
-                          <span className="absolute inset-0 origin-bottom scale-y-0 bg-white/30 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100" />
+                          <span className="relative z-10" style={{ color: "var(--dc-accent-text)" }}>{item.label}</span>
+                          <span className="absolute inset-0 origin-bottom scale-y-0 bg-black/10 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100" />
                         </Link>
                       </Magnetic>
                     </li>
@@ -232,7 +235,8 @@ export function SiteHeader() {
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.4, opacity: 0 }}
                     transition={{ duration: 0.35, ease: EASE.spring }}
-                    className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--dc-accent)] px-1 text-[11px] font-bold leading-none text-[var(--dc-accent-text)] tabular-nums"
+                    className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--dc-accent)] px-1 text-[11px] font-bold leading-none tabular-nums"
+                    style={{ color: "var(--dc-accent-text)" }}
                   >
                     {itemCount > 99 ? "99+" : itemCount}
                   </motion.span>
@@ -266,53 +270,89 @@ export function SiteHeader() {
         </div>
       </motion.header>
 
-      {/* ── FULL-SCREEN MEGA MENU (desktop) ──
-          Shares the same hover zone as the header via
-          openMenu/scheduleClose/cancelClose, so moving the
-          pointer from the nav link, through the gap, into
-          this panel never triggers a close. */}
+      {/* ── CONTAINED MEGA MENU (desktop, max ~70vh) ──
+          Panel is anchored below the header, not full screen.
+          A transparent scrim underneath closes the menu on click.
+          Moving into the panel cancels the debounced close. */}
       <AnimatePresence>
         {menu && (
-          <motion.div
-            key={menu.href}
-            initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
-            animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
-            exit={{ clipPath: "inset(0% 0% 100% 0%)" }}
-            transition={{ duration: 0.65, ease: EASE.out }}
-            onMouseEnter={cancelClose}
-            onMouseLeave={scheduleClose}
-            className="fixed inset-0 z-[var(--dc-z-overlay)] hidden bg-[var(--dc-bg-elevated)] lg:block"
-          >
-            <div className="dc-gutter flex h-full flex-col justify-center pt-[var(--dc-header-height)]">
-              <p className="mb-10 text-xs text-[var(--dc-text-subtle)]">{menu.label}</p>
-              <ul className="grid grid-cols-2 gap-x-12 xl:grid-cols-3">
-                {menu.children!.map((child, i) => (
-                  <li key={child.href} className="overflow-hidden border-t border-[var(--dc-border)]">
-                    <motion.div
-                      initial={{ y: "110%" }}
-                      animate={{ y: "0%" }}
-                      exit={{ y: "110%", transition: { duration: 0.3 } }}
-                      transition={{ duration: 0.8, ease: EASE.out, delay: 0.1 + i * 0.045 }}
-                    >
-                      <Link
-                        href={child.href}
-                        onMouseEnter={() => cursor.set("view", "Open")}
-                        onMouseLeave={cursor.reset}
-                        className="group flex items-baseline justify-between gap-4 py-5"
+          <>
+            {/* Scrim — click anywhere below the panel to close */}
+            <motion.div
+              key="scrim"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-[calc(var(--dc-z-overlay)-1)] hidden lg:block"
+              style={{ top: "var(--dc-header-height)" }}
+              onClick={closeMenu}
+            />
+
+            {/* Panel */}
+            <motion.div
+              key={menu.href}
+              initial={{ clipPath: "inset(0% 0% 100% 0%)", opacity: 0 }}
+              animate={{ clipPath: "inset(0% 0% 0% 0%)", opacity: 1 }}
+              exit={{ clipPath: "inset(0% 0% 100% 0%)", opacity: 0 }}
+              transition={{ duration: 0.5, ease: EASE.out }}
+              onMouseEnter={cancelClose}
+              onMouseLeave={scheduleClose}
+              className="fixed inset-x-0 z-[var(--dc-z-overlay)] hidden border-b border-[var(--dc-border)] bg-[rgba(10,10,10,0.95)] backdrop-blur-2xl lg:block"
+              style={{
+                top: "var(--dc-header-height)",
+                maxHeight: "70vh",
+                overflowY: "auto",
+              }}
+            >
+              <div className="dc-gutter py-8 pb-10">
+                {/* Panel header row */}
+                <div className="mb-6 flex items-center justify-between">
+                  <p className="text-xs uppercase tracking-[0.14em] text-[var(--dc-text-subtle)]">
+                    {menu.label}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={closeMenu}
+                    onMouseEnter={() => cursor.set("hover")}
+                    onMouseLeave={cursor.reset}
+                    className="flex items-center gap-1.5 text-xs text-[var(--dc-text-subtle)] transition-colors hover:text-[var(--dc-text)]"
+                    aria-label="Close menu"
+                  >
+                    <X size={14} />
+                    Close
+                  </button>
+                </div>
+
+                <ul className="grid grid-cols-2 gap-x-12 xl:grid-cols-3">
+                  {menu.children!.map((child, i) => (
+                    <li key={child.href} className="overflow-hidden border-t border-[var(--dc-border)]">
+                      <motion.div
+                        initial={{ y: "110%", opacity: 0 }}
+                        animate={{ y: "0%", opacity: 1 }}
+                        exit={{ y: "110%", opacity: 0, transition: { duration: 0.25 } }}
+                        transition={{ duration: 0.65, ease: EASE.out, delay: 0.05 + i * 0.04 }}
                       >
-                        <span className="font-display text-[clamp(1.5rem,2.6vw,2.4rem)] font-semibold leading-none tracking-[-0.03em] text-[var(--dc-text)] transition-colors duration-300 group-hover:text-[var(--dc-accent)]">
-                          {child.label}
-                        </span>
-                        <span className="text-xs tabular-nums text-[var(--dc-text-subtle)]">
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                      </Link>
-                    </motion.div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </motion.div>
+                        <Link
+                          href={child.href}
+                          onMouseEnter={() => cursor.set("view", "Open")}
+                          onMouseLeave={cursor.reset}
+                          className="group flex items-baseline justify-between gap-4 py-4"
+                        >
+                          <span className="font-display text-[clamp(1.25rem,2vw,1.9rem)] font-semibold leading-none tracking-[-0.03em] text-[var(--dc-text)] transition-colors duration-300 group-hover:text-[var(--dc-accent)]">
+                            {child.label}
+                          </span>
+                          <span className="text-xs tabular-nums text-[var(--dc-text-subtle)]">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                        </Link>
+                      </motion.div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
@@ -370,7 +410,13 @@ export function SiteHeader() {
                                   onClick={() => setMobileOpen(false)}
                                   className="flex items-baseline justify-between py-5"
                                 >
-                                  <span className="font-display text-[clamp(2rem,9vw,3.5rem)] font-bold leading-none tracking-[-0.04em] text-[var(--dc-text)]">
+                                  <span
+                                    className={cn(
+                                      "font-display text-[clamp(2rem,9vw,3.5rem)] font-bold leading-none tracking-[-0.04em]",
+                                      item.isHighlighted ? "" : "text-[var(--dc-text)]"
+                                    )}
+                                    style={item.isHighlighted ? { color: "var(--dc-accent)" } : undefined}
+                                  >
                                     {item.label}
                                   </span>
                                   <span className="text-xs tabular-nums text-[var(--dc-text-subtle)]">

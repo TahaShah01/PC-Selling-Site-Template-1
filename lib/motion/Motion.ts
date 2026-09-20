@@ -70,3 +70,58 @@ export const blurIn = {
 
 /** Viewport config used with whileInView so sections fire once, late. */
 export const inViewOnce = { once: true, margin: "-12% 0px -12% 0px" } as const;
+
+/* ─────────────────────────────────────────────────────────
+   NAMED PAGE / SECTION VARIANTS
+   Use these with whileInView + variants on section wrappers.
+   All inner pages (shop, search, category, etc) use these
+   for consistent scroll-reveal choreography.
+───────────────────────────────────────────────────────── */
+
+/** Fade up from below — default for most content blocks */
+export const fadeUp = {
+  hidden: { opacity: 0, y: 32 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: DUR.base, ease: EASE.out },
+  },
+};
+
+/** Slide in from the left */
+export const slideLeft = {
+  hidden: { opacity: 0, x: -40 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: DUR.base, ease: EASE.out },
+  },
+};
+
+/** Slide in from the right */
+export const slideRight = {
+  hidden: { opacity: 0, x: 40 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: DUR.base, ease: EASE.out },
+  },
+};
+
+/** Scale up from 96% — for cards and images */
+export const scaleUp = {
+  hidden: { opacity: 0, scale: 0.94 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: DUR.slow, ease: EASE.out },
+  },
+};
+
+/** Staggered container — wraps a list of items */
+export const staggerList = (amount = 0.07, delay = 0) => ({
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: amount, delayChildren: delay },
+  },
+});

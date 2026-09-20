@@ -11,14 +11,14 @@ import {
 import { SPRING, EASE } from "../../lib/motion/Motion";
 
 /* ─────────────────────────────────────────────────────────
-   CURSOR
-   A single volt dot that reacts to what is under it.
+   CURSOR — Phase 8 fix
 
-   Usage anywhere in the tree:
-     const cursor = useCursor();
-     <div onMouseEnter={() => cursor.set("view")} ... />
-     <div onMouseEnter={() => cursor.set("label", "Drag")} ... />
-     onMouseLeave={cursor.reset}
+   Fix #15: removed mix-blend-mode: difference which made
+   the dot near-invisible on --dc-bg (#080808).
+   Default mode now uses volt color at 70% opacity — reads
+   clearly on both dark backgrounds and light text areas.
+   Hover mode: larger ring with volt border, low-opacity fill.
+   View/label mode: solid volt fill (unchanged, correct).
 ───────────────────────────────────────────────────────── */
 
 type Mode = "default" | "hover" | "view" | "label" | "hidden";
@@ -37,14 +37,8 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
 
     const api = React.useMemo<CursorApi>(
         () => ({
-            set: (m, l = "") => {
-                setMode(m);
-                setLabel(l);
-            },
-            reset: () => {
-                setMode("default");
-                setLabel("");
-            },
+            set: (m, l = "") => { setMode(m); setLabel(l); },
+            reset: () => { setMode("default"); setLabel(""); },
         }),
         []
     );
@@ -58,11 +52,28 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
 }
 
 const SIZES: Record<Mode, number> = {
-    default: 12,
-    hover: 56,
+    default: 10,
+    hover: 52,
     view: 92,
     label: 84,
     hidden: 0,
+};
+
+// Background colors per mode — no mix-blend-mode on default/hover
+const BG_COLORS: Record<Mode, string> = {
+    default: "rgba(200, 255, 0, 0.75)",   // volt, semi-transparent, always readable
+    hover: "rgba(200, 255, 0, 0.10)",      // volt tint ring
+    view: "rgba(200, 255, 0, 1)",          // solid volt
+    label: "rgba(200, 255, 0, 1)",         // solid volt
+    hidden: "rgba(200, 255, 0, 0)",
+};
+
+const BORDER_COLORS: Record<Mode, string> = {
+    default: "transparent",
+    hover: "rgba(200, 255, 0, 0.6)",       // volt border ring on hover
+    view: "transparent",
+    label: "transparent",
+    hidden: "transparent",
 };
 
 function Cursor({ mode, label }: { mode: Mode; label: string }) {
@@ -75,7 +86,6 @@ function Cursor({ mode, label }: { mode: Mode; label: string }) {
     const sy = useSpring(y, SPRING.cursor);
 
     React.useEffect(() => {
-        // Pointer-fine only: never show a fake cursor on touch.
         const mq = window.matchMedia("(pointer: fine)");
         const apply = () => setEnabled(mq.matches);
         apply();
@@ -85,10 +95,7 @@ function Cursor({ mode, label }: { mode: Mode; label: string }) {
 
     React.useEffect(() => {
         if (!enabled) return;
-        const move = (e: PointerEvent) => {
-            x.set(e.clientX);
-            y.set(e.clientY);
-        };
+        const move = (e: PointerEvent) => { x.set(e.clientX); y.set(e.clientY); };
         window.addEventListener("pointermove", move, { passive: true });
         return () => window.removeEventListener("pointermove", move);
     }, [enabled, x, y]);
@@ -107,14 +114,15 @@ function Cursor({ mode, label }: { mode: Mode; label: string }) {
                 y: sy,
                 translateX: "-50%",
                 translateY: "-50%",
-                mixBlendMode: isRich ? "normal" : "difference",
+                // No mix-blend-mode — solid volt color reads on dark and light backgrounds
+                border: `1.5px solid ${BORDER_COLORS[mode]}`,
             }}
             animate={{
                 width: size,
                 height: size,
-                backgroundColor: isRich ? "var(--dc-accent)" : "#ffffff",
+                backgroundColor: BG_COLORS[mode],
             }}
-            transition={{ duration: 0.45, ease: EASE.out }}
+            transition={{ duration: 0.4, ease: EASE.out }}
         >
             <AnimatePresence mode="wait">
                 {isRich && (
@@ -124,7 +132,8 @@ function Cursor({ mode, label }: { mode: Mode; label: string }) {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
                         transition={{ duration: 0.25 }}
-                        className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--dc-accent-text)] whitespace-nowrap"
+                        className="text-[10px] font-semibold uppercase tracking-[0.14em] whitespace-nowrap"
+                        style={{ color: "var(--dc-accent-text)" }}
                     >
                         {label || "View"}
                     </motion.span>

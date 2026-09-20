@@ -18,6 +18,8 @@ html {
   scroll-behavior: auto;
   /* Lenis handles smooth scroll */
   height: 100%;
+  /* Prevents layout shift when scroll lock removes the scrollbar */
+  scrollbar-gutter: stable;
 }
 
 body {
