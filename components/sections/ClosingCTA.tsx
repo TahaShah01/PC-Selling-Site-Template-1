@@ -14,40 +14,42 @@ import {
 import { useGSAP } from "@gsap/react";
 import { gsap } from "../../lib/gsap";
 import { ArrowUpRight, Star, Clock, Zap, MessageSquare, Gamepad2, type LucideIcon } from "lucide-react";
-import { Magnetic, LineMask } from "../motion/Reveal";
+import { Magnetic } from "../motion/Reveal";
 import { useCursor } from "../motion/Cursor";
 
 /* ─────────────────────────────────────────────────────────
-   CLOSING CTA — Phase 8
+   CLOSING CTA — headline fix
 
-   The core fix running through this rebuild: nothing is ever
-   hidden by default JSX/CSS waiting for JS to reveal it.
-   Every element renders in its real, final, readable state;
-   GSAP's own `gsap.set(...)` establishes the "before" pose
-   *only inside the effect that's about to animate it*. If
-   that effect never runs — reduced motion, or any future bug
-   in the effect — the content was never hidden in the first
-   place. (The previous version's `style={{ opacity: 0 }}` on
-   the CTA button and all three stat cards did the opposite:
-   it hid them unconditionally in JSX, and only the very GSAP
-   branch that's disabled under reduced motion ever set them
-   back to visible. Reduced-motion visitors got an invisible
-   primary CTA and zero trust signals.)
+   The section wasn't "empty" by design — the headline
+   ("Tell us what you play.") was never becoming visible.
+   It was rendered through the shared `LineMask` component,
+   and whatever reveal `LineMask` depends on wasn't firing in
+   this section, so the whole top of the section — the part
+   carrying the actual message — was invisible. Everything
+   below it (the bento grid) was fine, which is why the page
+   read as "content starts halfway down, nothing above it."
 
-   Also:
-   • the "How it works" card had no real border — its entire
-     outline was the animated SVG stroke, so if that draw
-     ever failed to fire the card rendered borderless. It now
-     has a permanent CSS border; the SVG stroke is a bonus
-     accent sweep on top of it, not the only outline.
-   • the stat numbers now genuinely count up (0 → 4.9, 0 → 2,
-     0 → 1,200), scroll-triggered, matching the counter motif
-     from the build sequence.
-   • the games marquee quadruples its list for the seamless
-     loop, which meant a screen reader heard every title four
-     times. It's marked decorative now, with the real list
-     given once via sr-only text; hovering it also pauses it.
+   Fix: the headline no longer depends on an opaque shared
+   component's internal trigger. It's two lines, split and
+   masked directly in this file, revealed by their own GSAP
+   ScrollTrigger the moment the section approaches the
+   viewport — same pattern already proven out in Hero.tsx.
+   Reduced motion gets the lines set to their finished,
+   visible state immediately rather than left at whatever
+   `LineMask` would have defaulted to.
+
+   Added a one-line supporting sentence under the headline,
+   staggered in just after it, so that vertical space carries
+   real content (the immediate promise) rather than being pure
+   whitespace waiting for a heading that wasn't showing up.
+
+   Everything below the headline — the bento grid, the counting
+   stats, the card border draw, the games ticker — is untouched;
+   that part was already solid.
 ───────────────────────────────────────────────────────── */
+
+const HEADLINE_LINES = ["Tell us what", "you play."];
+const SUB_LINE = "We'll spec it, price it in PKR, and build it — usually the same day.";
 
 const GAMES_TICKER = [
   "Valorant", "CS2", "GTA VI", "Fortnite", "Warzone",
@@ -103,6 +105,7 @@ function formatCount(v: number, decimals: number) {
 
 export function ClosingCTA() {
   const ref = React.useRef<HTMLElement>(null);
+  const headlineRef = React.useRef<HTMLDivElement>(null);
   const bentoRef = React.useRef<HTMLDivElement>(null);
   const ctaBtnRef = React.useRef<HTMLAnchorElement>(null);
   const howCardRef = React.useRef<HTMLDivElement>(null);
@@ -116,6 +119,37 @@ export function ClosingCTA() {
   });
   const bgOpacity = useTransform(scrollYProgress, [0, 1], [0, 1]);
   const scale = useTransform(scrollYProgress, [0, 1], [0.9, 1]);
+
+  /* ── Headline reveal — self-contained, can't silently fail to show ── */
+  useGSAP(
+    () => {
+      if (!headlineRef.current) return;
+
+      const lines = gsap.utils.toArray<HTMLElement>(".cta-headline-line", headlineRef.current);
+      const sub = headlineRef.current.querySelector<HTMLElement>(".cta-sub");
+
+      if (reduced) {
+        gsap.set(lines, { yPercent: 0, rotate: 0 });
+        if (sub) gsap.set(sub, { opacity: 1, y: 0 });
+        return;
+      }
+
+      gsap.set(lines, { yPercent: 110, rotate: 3 });
+      if (sub) gsap.set(sub, { opacity: 0, y: 16 });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: headlineRef.current,
+          start: "top 85%",
+          toggleActions: "play none none none",
+        },
+      });
+
+      tl.to(lines, { yPercent: 0, rotate: 0, duration: 1.1, ease: "expo.out", stagger: 0.12 }, 0);
+      if (sub) tl.to(sub, { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, 0.5);
+    },
+    { scope: ref, dependencies: [reduced] }
+  );
 
   useGSAP(
     () => {
@@ -169,9 +203,6 @@ export function ClosingCTA() {
         const card = howCardRef.current;
         const rect = borderRectRef.current;
 
-        // Measured in JS, not left to CSS calc()-in-SVG-attribute
-        // support (patchy in older engines) — this guarantees
-        // getTotalLength() matches the card's real rendered size.
         const setSize = () => {
           rect.setAttribute("width", String(Math.max(0, card.offsetWidth - 1)));
           rect.setAttribute("height", String(Math.max(0, card.offsetHeight - 1)));
@@ -223,10 +254,18 @@ export function ClosingCTA() {
       />
 
       <div className="dc-container relative py-[16vh]">
-        <motion.div style={{ scale }}>
-          <h2 className="origin-left font-display text-[clamp(2.5rem,9vw,8rem)] font-bold leading-[0.9] text-[var(--dc-text)]">
-            <LineMask lines={["Tell us what", "you play."]} />
+        <motion.div ref={headlineRef} style={{ scale }} className="origin-left">
+          <h2 className="font-display text-[clamp(2.5rem,9vw,8rem)] font-bold leading-[0.9] text-[var(--dc-text)]">
+            <span className="sr-only">Tell us what you play.</span>
+            {HEADLINE_LINES.map((line) => (
+              <span key={line} aria-hidden="true" className="block overflow-hidden">
+                <span className="cta-headline-line block">{line}</span>
+              </span>
+            ))}
           </h2>
+          <p className="cta-sub mt-6 max-w-[38ch] text-base sm:text-lg text-[var(--dc-text-muted)] leading-relaxed">
+            {SUB_LINE}
+          </p>
         </motion.div>
 
         <div ref={bentoRef} className="mt-14 grid grid-cols-1 gap-4 lg:grid-cols-12">

@@ -11,6 +11,7 @@ export interface Category {
   description: string;
   icon: string; // Lucide icon name or custom SVG path
   gradient?: string; // Background gradient for category cards
+  image?: string; // Showcase hero image
   productCount?: number;
   featured?: boolean;
   shopifyHandle?: string; // Original Shopify collection handle
@@ -26,6 +27,7 @@ export const CATEGORIES: Category[] = [
       "Expert-assembled, tested, and tuned. Every build is crafted for your specific needs.",
     icon: "Monitor",
     gradient: "from-violet-900 to-purple-900",
+    image: "/categories/gaming-pcs.jpg",
     featured: true,
   },
   {
@@ -36,6 +38,7 @@ export const CATEGORIES: Category[] = [
     description: "RTX 40 Series, RX 7000 Series, and more.",
     icon: "Cpu",
     gradient: "from-green-900 to-emerald-900",
+    image: "/categories/gpus.jpg",
     shopifyHandle: "graphics-cards",
     featured: true,
   },
@@ -47,6 +50,7 @@ export const CATEGORIES: Category[] = [
     description: "Intel Core Ultra and AMD Ryzen CPUs.",
     icon: "CircuitBoard",
     gradient: "from-blue-900 to-sky-900",
+    image: "/categories/cpus.jpg",
     shopifyHandle: "processors",
     featured: true,
   },
@@ -58,6 +62,7 @@ export const CATEGORIES: Category[] = [
     description: "ATX, mATX, and ITX boards for every build.",
     icon: "Server",
     gradient: "from-slate-800 to-zinc-900",
+    image: "/categories/motherboards.png",
     shopifyHandle: "motherboards",
   },
   {
@@ -68,6 +73,7 @@ export const CATEGORIES: Category[] = [
     description: "DDR5 and DDR4 kits from 16GB to 128GB.",
     icon: "MemoryStick",
     gradient: "from-indigo-900 to-blue-900",
+    image: "/categories/ram.jpg",
     shopifyHandle: "ram",
   },
   {
@@ -98,6 +104,7 @@ export const CATEGORIES: Category[] = [
     description: "Air coolers and AIO liquid coolers.",
     icon: "Wind",
     gradient: "from-cyan-900 to-teal-900",
+    image: "/categories/cooling.jpg",
     shopifyHandle: "cpu-liquid-coolers", // merged collection
     featured: true,
   },
@@ -109,6 +116,7 @@ export const CATEGORIES: Category[] = [
     description: "4K, 1440p, 1080p — high refresh rate gaming displays.",
     icon: "Monitor",
     gradient: "from-rose-900 to-red-900",
+    image: "/categories/monitors.jpg",
     shopifyHandle: "monitors",
     featured: true,
   },
@@ -120,6 +128,7 @@ export const CATEGORIES: Category[] = [
     description: "Mechanical, optical, and membrane gaming keyboards.",
     icon: "Keyboard",
     gradient: "from-purple-900 to-violet-900",
+    image: "/categories/keyboards.jpg",
     shopifyHandle: "gaming-keyboard",
   },
   {
@@ -130,6 +139,7 @@ export const CATEGORIES: Category[] = [
     description: "Precision gaming mice for every grip style.",
     icon: "Mouse",
     gradient: "from-fuchsia-900 to-pink-900",
+    image: "/categories/mice.png",
     shopifyHandle: "gaming-mice",
   },
   {
@@ -140,6 +150,7 @@ export const CATEGORIES: Category[] = [
     description: "Immersive audio for competitive and casual play.",
     icon: "Headphones",
     gradient: "from-teal-900 to-green-900",
+    image: "/categories/headsets.webp",
     shopifyHandle: "gaming-headsets",
   },
   {
@@ -160,6 +171,7 @@ export const CATEGORIES: Category[] = [
     description: "Mini, mid-tower, and full-tower gaming chassis.",
     icon: "Box",
     gradient: "from-zinc-800 to-stone-900",
+    image: "/categories/cases.png",
     shopifyHandle: "gaming-case",
     productCount: 58,
   },
