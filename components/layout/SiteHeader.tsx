@@ -16,6 +16,7 @@ import { PRIMARY_NAV } from "../../data/navigation";
 import type { NavItem } from "../../data/navigation";
 import { useCartStore } from "@/lib/store/cart";
 import { CartDrawer } from "@/components/shop/CartDrawer";
+import { ThemeToggle } from "./ThemeToggle";
 import { useCursor } from "../motion/Cursor";
 import { Magnetic } from "../motion/Reveal";
 import { useScrollLock } from "../providers/SmoothScrollProvider";
@@ -122,7 +123,7 @@ export function SiteHeader() {
           "fixed inset-x-0 top-0 z-[var(--dc-z-sticky)]",
           "transition-[background-color,border-color,backdrop-filter] duration-500",
           solid && !overlayOpen
-            ? "border-b border-[var(--dc-border)] bg-[rgba(8,8,8,0.72)] backdrop-blur-2xl"
+            ? "border-b border-[var(--dc-border)] bg-[var(--dc-header-bg)] backdrop-blur-2xl"
             : "border-b border-transparent bg-transparent"
         )}
       >
@@ -213,6 +214,7 @@ export function SiteHeader() {
             <IconLink href="/wishlist" label="Wishlist" className="hidden sm:inline-flex">
               <Heart size={18} />
             </IconLink>
+            <ThemeToggle />
 
             <button
               type="button"
@@ -298,7 +300,7 @@ export function SiteHeader() {
               transition={{ duration: 0.5, ease: EASE.out }}
               onMouseEnter={cancelClose}
               onMouseLeave={scheduleClose}
-              className="fixed inset-x-0 z-[var(--dc-z-overlay)] hidden border-b border-[var(--dc-border)] bg-[rgba(10,10,10,0.95)] backdrop-blur-2xl lg:block"
+              className="fixed inset-x-0 z-[var(--dc-z-overlay)] hidden border-b border-[var(--dc-border)] bg-[var(--dc-menu-bg)] backdrop-blur-2xl lg:block"
               style={{
                 top: "var(--dc-header-height)",
                 maxHeight: "70vh",
@@ -434,12 +436,15 @@ export function SiteHeader() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.5 }}
-                      className="mt-12 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--dc-text-muted)]"
+                      className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--dc-border)] pt-6 text-sm text-[var(--dc-text-muted)]"
                     >
-                      <Link href="/search" onClick={() => setMobileOpen(false)}>Search</Link>
-                      <Link href="/wishlist" onClick={() => setMobileOpen(false)}>Wishlist</Link>
-                      <Link href="/contact" onClick={() => setMobileOpen(false)}>Contact</Link>
-                      <span className="text-[var(--dc-text-subtle)]">Rawalpindi, PK</span>
+                      <div className="flex flex-wrap gap-x-6 gap-y-2">
+                        <Link href="/search" onClick={() => setMobileOpen(false)}>Search</Link>
+                        <Link href="/wishlist" onClick={() => setMobileOpen(false)}>Wishlist</Link>
+                        <Link href="/contact" onClick={() => setMobileOpen(false)}>Contact</Link>
+                        <span className="text-[var(--dc-text-subtle)]">Rawalpindi, PK</span>
+                      </div>
+                      <ThemeToggle showLabel />
                     </motion.div>
                   </motion.div>
                 ) : (

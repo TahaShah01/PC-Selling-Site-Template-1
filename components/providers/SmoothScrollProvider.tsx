@@ -29,7 +29,7 @@ type Ctx = {
 
 const LenisContext = React.createContext<Ctx>({
   lenis: null,
-  scrollTo: () => {},
+  scrollTo: () => { },
 });
 
 export const useLenis = () => React.useContext(LenisContext);
@@ -40,6 +40,8 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
   const [lenis, setLenis] = React.useState<Lenis | null>(null);
 
   React.useEffect(() => {
+    if (reduced) return;
+
     const instance = new Lenis({
       duration: 1.15,
       // expo-out — matches EASE.out so scroll and animation share a feel
@@ -89,7 +91,7 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     return () => {
       gsap.ticker.remove(onTick);
       ScrollTrigger.scrollerProxy(document.body, undefined as unknown as ScrollTrigger.ScrollerProxyVars);
-      ScrollTrigger.removeEventListener("refresh", () => {});
+      ScrollTrigger.removeEventListener("refresh", () => { });
       instance.destroy();
       lenisRef.current = null;
       setLenis(null);

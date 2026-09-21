@@ -59,18 +59,18 @@ const SIZES: Record<Mode, number> = {
     hidden: 0,
 };
 
-// Background colors per mode — no mix-blend-mode on default/hover
+// Background colors per mode — uses theme tokens for light and dark compatibility
 const BG_COLORS: Record<Mode, string> = {
-    default: "rgba(200, 255, 0, 0.75)",   // volt, semi-transparent, always readable
-    hover: "rgba(200, 255, 0, 0.10)",      // volt tint ring
-    view: "rgba(200, 255, 0, 1)",          // solid volt
-    label: "rgba(200, 255, 0, 1)",         // solid volt
-    hidden: "rgba(200, 255, 0, 0)",
+    default: "var(--dc-accent)",
+    hover: "var(--dc-accent-dim)",
+    view: "var(--dc-accent)",
+    label: "var(--dc-accent)",
+    hidden: "transparent",
 };
 
 const BORDER_COLORS: Record<Mode, string> = {
-    default: "transparent",
-    hover: "rgba(200, 255, 0, 0.6)",       // volt border ring on hover
+    default: "rgba(0, 0, 0, 0.15)",
+    hover: "var(--dc-accent)",
     view: "transparent",
     label: "transparent",
     hidden: "transparent",

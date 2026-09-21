@@ -1,121 +1,161 @@
-import type { Metadata } from "next";
+"use client";
+
+import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { Container, Section } from "@/components/primitives/Container";
+import { PageHero, PageShell, RevealSection } from "@/components/sections/PageHero";
+import { EASE } from "@/lib/motion/Motion";
 
-export const metadata: Metadata = {
-  title: "Frequently Asked Questions",
-  description: "Answers to common questions about our custom gaming PCs, shipping, and warranty policies.",
-};
-
-const FAQS = [
+const FAQ_DATA = [
   {
-    category: "Orders & Payments",
-    questions: [
+    category: "Orders & Shipping",
+    items: [
       {
-        q: "What payment methods do you accept?",
-        a: "We accept major credit/debit cards, PayPal, and bank transfers. All transactions are securely processed in PKR.",
+        q: "How long does a custom PC take to build?",
+        a: "Our standard assembly time is 3-5 business days. This includes professional cable management, BIOS updates, OS installation, and a rigorous 48-hour burn-in stress test to ensure every component performs flawlessly under load."
       },
       {
-        q: "Can I modify or cancel my order after placing it?",
-        a: "Orders can be modified or canceled within 2 hours of placement. Since custom PCs begin assembly quickly, changes after this window may not be possible.",
+        q: "Do you ship nationwide?",
+        a: "Yes, we ship across all major cities in Pakistan. Custom PCs are packed using Instapak expanding foam to secure heavy components like graphics cards during transit, ensuring your system arrives exactly as it left our workshop."
       },
       {
-        q: "Do you offer financing or installment plans?",
-        a: "Currently, we do not offer direct in-house financing. However, you may use credit card installment plans depending on your bank's policies.",
+        q: "Can I pick up my order locally?",
+        a: "Yes! Local pickup is available at our Rawalpindi workshop. Select 'Local Pickup' during checkout and we'll notify you when your order is ready."
       }
     ]
   },
   {
-    category: "Custom PC Builds",
-    questions: [
+    category: "Warranty & Support",
+    items: [
       {
-        q: "How long does it take to build and ship a custom PC?",
-        a: "Standard build time is 3-5 business days. This includes professional assembly, stress testing, and benchmarking. Shipping takes an additional 2-4 days depending on your location in Pakistan.",
+        q: "What is your warranty policy on custom PCs?",
+        a: "Every custom PC built by Daddu Charger comes with a 1-year service warranty covering labor and diagnostics. The individual components carry their full manufacturer warranties (typically 1-3 years depending on the part). If a part fails, we handle the RMA process for you."
       },
       {
-        q: "Do custom PCs come with an operating system installed?",
-        a: "Yes, all custom rigs come with a trial version of Windows installed for testing. You can add a genuine Windows license during the configuration process.",
-      },
-      {
-        q: "Can I request components that are not listed on your website?",
-        a: "Yes! If you have a specific component in mind that isn't in our current catalog, please contact us via WhatsApp or Email, and we'll do our best to source it for your build.",
+        q: "Do you provide after-sales support?",
+        a: "Absolutely. We provide lifetime technical support via WhatsApp for all systems we build. Whether you need help with a driver update or have a question about upgrading years down the line, we're here to help."
       }
     ]
   },
   {
-    category: "Shipping & Warranty",
-    questions: [
+    category: "Hardware & Customization",
+    items: [
       {
-        q: "Do you ship nationwide in Pakistan?",
-        a: "Yes, we ship across Pakistan using secure, insured courier services to ensure your high-value components arrive safely.",
+        q: "Can I customize one of your pre-built systems?",
+        a: "Yes, our pre-configured builds in the 'Gaming PCs' section act as a starting point. If you want to add more storage, change the case, or upgrade the GPU, just contact us before ordering."
       },
       {
-        q: "What is your warranty policy?",
-        a: "All components carry their respective official manufacturer warranties. We also provide a 1-year Daddu Charger service warranty for labor and diagnostics on all custom builds.",
-      },
-      {
-        q: "What happens if my PC arrives damaged?",
-        a: "We pack all builds with extreme care (including internal expansion foam for GPUs). In the rare event of shipping damage, please document it immediately with photos and contact our support within 24 hours.",
+        q: "Do you use used or refurbished parts?",
+        a: "No. Unless explicitly stated in a specific 'Clearance' or 'Refurbished' section, every component we sell and use in our builds is 100% brand new, factory-sealed, and sourced from authorized local distributors."
       }
     ]
   }
 ];
 
 export default function FAQPage() {
+  const [activeCategory, setActiveCategory] = React.useState(FAQ_DATA[0].category);
+  const [openItems, setOpenItems] = React.useState<Record<string, boolean>>({});
+
+  const toggleItem = (id: string) => {
+    setOpenItems(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const currentCategoryData = FAQ_DATA.find(c => c.category === activeCategory);
+
   return (
     <>
       <SiteHeader />
-      <main className="pt-[calc(var(--dc-header-height)+2rem)] min-h-screen">
-        <Section className="pb-12">
-          <Container className="max-w-4xl mx-auto text-center">
-            <p className="dc-eyebrow mb-4">Support</p>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--dc-text)] mb-6">
-              Frequently Asked Questions
-            </h1>
-            <p className="text-lg text-[var(--dc-text-muted)] leading-relaxed">
-              Find answers to common questions about ordering, custom builds, and our policies.
-            </p>
-          </Container>
-        </Section>
+      <PageShell>
+        <PageHero
+          eyebrow="Support"
+          headline={["Frequently", "Asked Questions"]}
+          body="Everything you need to know about our builds, shipping, and warranty policies."
+          size="sm"
+        />
 
-        <Section className="pt-0">
-          <Container className="max-w-4xl mx-auto">
-            <div className="space-y-12">
-              {FAQS.map((category, idx) => (
-                <div key={idx} className="bg-[var(--dc-card)] border border-[var(--dc-border)] rounded-[var(--dc-radius-2xl)] p-8">
-                  <h2 className="text-2xl font-bold text-[var(--dc-text)] mb-6 pb-4 border-b border-[var(--dc-border)]">
-                    {category.category}
-                  </h2>
-                  <div className="space-y-6">
-                    {category.questions.map((faq, fIdx) => (
-                      <div key={fIdx}>
-                        <h3 className="text-lg font-semibold text-[var(--dc-text)] mb-2">
-                          {faq.q}
-                        </h3>
-                        <p className="text-[var(--dc-text-muted)] leading-relaxed">
-                          {faq.a}
-                        </p>
-                      </div>
-                    ))}
+        <div className="dc-container py-16 lg:py-24 max-w-4xl">
+          {/* Category Pills */}
+          <div className="flex flex-wrap gap-2 mb-12">
+            {FAQ_DATA.map((cat) => (
+              <button
+                key={cat.category}
+                onClick={() => setActiveCategory(cat.category)}
+                className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-colors duration-[var(--dc-duration-fast)] ${
+                  activeCategory === cat.category
+                    ? "bg-[var(--dc-text)] text-[var(--dc-bg)]"
+                    : "bg-[var(--dc-surface)] text-[var(--dc-text-muted)] border border-[var(--dc-border)] hover:border-[var(--dc-accent)] hover:text-[var(--dc-text)]"
+                }`}
+              >
+                {cat.category}
+              </button>
+            ))}
+          </div>
+
+          {/* Accordion List */}
+          <RevealSection delay={0.1}>
+            <div className="divide-y divide-[var(--dc-border)] border-y border-[var(--dc-border)]">
+              {currentCategoryData?.items.map((item, i) => {
+                const id = `${activeCategory}-${i}`;
+                const isOpen = openItems[id] || false;
+                
+                return (
+                  <div key={id} className="py-2">
+                    <button
+                      onClick={() => toggleItem(id)}
+                      className="flex w-full items-center justify-between py-5 text-left group"
+                    >
+                      <span className={`text-lg font-display font-medium pr-8 transition-colors ${isOpen ? "text-[var(--dc-accent)]" : "text-[var(--dc-text)] group-hover:text-[var(--dc-accent)]"}`}>
+                        {item.q}
+                      </span>
+                      <motion.div
+                        animate={{ rotate: isOpen ? 45 : 0 }}
+                        transition={{ duration: 0.3, ease: EASE.out }}
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors ${isOpen ? "border-[var(--dc-accent)] text-[var(--dc-accent)] bg-[var(--dc-accent)]/10" : "border-[var(--dc-border)] text-[var(--dc-text-muted)] group-hover:border-[var(--dc-accent)] group-hover:text-[var(--dc-accent)]"}`}
+                      >
+                        <Plus size={16} />
+                      </motion.div>
+                    </button>
+                    
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.4, ease: EASE.out }}
+                          className="overflow-hidden"
+                        >
+                          <p className="pb-8 pt-2 text-[var(--dc-text-muted)] leading-relaxed max-w-3xl">
+                            {item.a}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-            
-            {/* Still have questions? */}
-            <div className="mt-12 text-center p-8 bg-[var(--dc-bg-elevated)] rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)]">
-              <h3 className="text-xl font-bold mb-3">Still have questions?</h3>
-              <p className="text-[var(--dc-text-muted)] mb-6">
-                Our team of PC experts is ready to help you out.
-              </p>
-              <a href="/contact" className="inline-flex items-center justify-center h-12 px-8 rounded-[var(--dc-radius-md)] bg-[var(--dc-accent)] text-[var(--dc-accent-text)] font-semibold hover:bg-[var(--dc-accent-hover)] transition-colors">
-                Contact Support
-              </a>
-            </div>
-          </Container>
-        </Section>
-      </main>
+          </RevealSection>
+          
+          {/* Still have questions block */}
+          <RevealSection delay={0.2} className="mt-16 p-8 rounded-[var(--dc-radius-2xl)] bg-[var(--dc-surface-2)] border border-[var(--dc-border)] text-center">
+            <h3 className="text-xl font-display font-bold mb-3">Still have questions?</h3>
+            <p className="text-[var(--dc-text-muted)] mb-6">Our team is ready to help you build your dream rig.</p>
+            <a 
+              href="/contact" 
+              className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-[var(--dc-text)] text-[var(--dc-bg)] font-bold hover:opacity-90 transition-opacity"
+            >
+              Contact Support
+            </a>
+          </RevealSection>
+          
+        </div>
+      </PageShell>
       <SiteFooter />
     </>
   );

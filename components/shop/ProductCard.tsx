@@ -50,10 +50,10 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
       {/* ─── IMAGE / BADGES ─── */}
       <Link 
         href={`/shop/${product.slug}`} 
-        className="relative block aspect-[4/3] bg-[var(--dc-surface)] p-6 overflow-hidden z-10"
+        className="relative block aspect-[4/3] bg-[var(--dc-surface)] p-4 sm:p-5 overflow-hidden z-10"
       >
         {/* Badges Overlay */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10">
           {!product.inStock && <Badge variant="neutral">Out of Stock</Badge>}
           {product.inStock && product.isNew && <Badge variant="new">New Arrival</Badge>}
           {product.inStock && isOnSale && <Badge variant="sale">Sale</Badge>}
@@ -65,8 +65,8 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
             src={product.images[0].src}
             alt={product.images[0].alt || product.title}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-contain object-center transition-transform duration-[var(--dc-duration-slow)] ease-[var(--dc-ease-out)] group-hover:scale-110"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            className="object-contain object-center transition-transform duration-[var(--dc-duration-slow)] ease-[var(--dc-ease-out)] group-hover:scale-108"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[var(--dc-text-subtle)] text-sm">
@@ -76,9 +76,9 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
       </Link>
 
       {/* ─── CONTENT ─── */}
-      <div className="flex flex-col flex-grow p-5 border-t border-[var(--dc-border)] z-10">
+      <div className="flex flex-col flex-grow p-4 sm:p-4.5 border-t border-[var(--dc-border)] z-10">
         {/* Brand */}
-        <span className="text-[11px] font-semibold tracking-wider uppercase text-[var(--dc-text-subtle)] mb-1">
+        <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-[var(--dc-text-subtle)] mb-1">
           {product.brand}
         </span>
         

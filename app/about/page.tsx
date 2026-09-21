@@ -1,87 +1,120 @@
-import type { Metadata } from "next";
+"use client";
+
+import * as React from "react";
+import Image from "next/image";
+import { Shield, Wrench, Zap, MonitorPlay } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { Container, Section } from "@/components/primitives/Container";
-import { BUSINESS } from "@/data/business";
-import { Cpu, Zap, ShieldCheck, MapPin } from "lucide-react";
-
-export const metadata: Metadata = {
-  title: "About Us",
-  description: `Learn more about ${BUSINESS.name}, ${BUSINESS.tagline}`,
-};
+import { PageHero, PageShell, RevealSection } from "@/components/sections/PageHero";
+import { ScrollWordFill, Parallax } from "@/components/motion/Reveal";
+import { ClosingCTA } from "@/components/sections/ClosingCTA";
 
 export default function AboutPage() {
   return (
     <>
       <SiteHeader />
-      <main className="pt-[calc(var(--dc-header-height)+2rem)] min-h-screen">
-        <Section className="pb-12">
-          <Container className="max-w-4xl mx-auto text-center">
-            <p className="dc-eyebrow mb-4">Our Story</p>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--dc-text)] mb-6">
-              Driven by Performance. <br className="hidden md:block" />
-              <span className="text-[var(--dc-accent)]">Built for Gamers.</span>
-            </h1>
-            <p className="text-lg text-[var(--dc-text-muted)] leading-relaxed">
-              {BUSINESS.description}
-            </p>
-          </Container>
-        </Section>
+      <PageShell>
+        <PageHero
+          eyebrow="Our Story"
+          headline={["We build rigs.", "We put our name", "on them."]}
+          size="lg"
+        />
 
-        {/* Core Values Grid */}
-        <Section className="bg-[var(--dc-bg-elevated)] border-y border-[var(--dc-border)]">
-          <Container>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  icon: Cpu,
-                  title: "Expert Craftsmanship",
-                  desc: "Every PC is meticulously built by seasoned technicians with strict quality control.",
-                },
-                {
-                  icon: ShieldCheck,
-                  title: "Authentic Parts",
-                  desc: "We only source 100% genuine components with official manufacturer warranties.",
-                },
-                {
-                  icon: Zap,
-                  title: "Uncompromised Performance",
-                  desc: "Rigs are benchmarked and stress-tested to ensure peak framerates out of the box.",
-                },
-                {
-                  icon: MapPin,
-                  title: "Local Excellence",
-                  desc: `Proudly serving the gaming community from our base in ${BUSINESS.city}, ${BUSINESS.country}.`,
-                },
-              ].map((value, i) => (
-                <div key={i} className="p-6 rounded-[var(--dc-radius-2xl)] bg-[var(--dc-card)] border border-[var(--dc-border)] hover:border-[var(--dc-border-accent)] transition-colors duration-[var(--dc-duration-normal)]">
-                  <div className="w-12 h-12 rounded-[var(--dc-radius-lg)] bg-[var(--dc-surface)] flex items-center justify-center text-[var(--dc-accent)] mb-4">
-                    <value.icon size={24} />
-                  </div>
-                  <h3 className="text-lg font-semibold text-[var(--dc-text)] mb-2">{value.title}</h3>
-                  <p className="text-sm text-[var(--dc-text-subtle)] leading-relaxed">{value.desc}</p>
-                </div>
-              ))}
+        {/* The Manifesto */}
+        <div className="dc-container py-20 lg:py-32">
+          <div className="max-w-4xl mx-auto">
+            <ScrollWordFill 
+              text="Daddu Charger was founded with a single mission: to bring true enthusiast-grade hardware and meticulous craftsmanship to the Pakistani gaming community. We don't cut corners. We don't compromise on cooling. And we never use subpar power supplies. Every rig that leaves our workshop is built the exact same way we build our own machines—with obsession."
+              className="text-2xl md:text-4xl lg:text-5xl font-display font-medium leading-tight text-[var(--dc-text)]"
+            />
+          </div>
+        </div>
+
+        {/* Stats Row */}
+        <RevealSection className="border-y border-[var(--dc-border)] bg-[var(--dc-surface)]">
+          <div className="dc-container py-16">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 divide-x-0 md:divide-x divide-[var(--dc-border)]">
+              <Stat value="2,500+" label="Custom Builds Delivered" />
+              <Stat value="48h" label="Burn-in Stress Testing" />
+              <Stat value="1st" label="Choice for Pro Gamers" />
+              <Stat value="1Yr" label="Service Warranty" />
             </div>
-          </Container>
-        </Section>
-        
-        {/* Our Approach */}
-        <Section>
-          <Container className="max-w-4xl mx-auto">
-             <div className="prose prose-invert prose-lg prose-p:text-[var(--dc-text-muted)] prose-p:leading-relaxed prose-headings:text-[var(--dc-text)] prose-a:text-[var(--dc-accent)] max-w-none">
-              <h2>The Daddu Charger Standard</h2>
-              <p>
-                At Daddu Charger, we don't just sell parts; we engineer experiences. Whether you are building your first 1080p gaming rig or a top-tier 4K workstation for content creation, our philosophy remains the same: zero compromises on quality, stability, and aesthetics.
-              </p>
-              <p>
-                We understand that a PC is an investment. That's why we guide our customers through the entire process, from component selection to post-purchase support, ensuring that every build is optimized, balanced, and ready to dominate the latest titles.
-              </p>
-             </div>
-          </Container>
-        </Section>
-      </main>
+          </div>
+        </RevealSection>
+
+        {/* Workshop Image with Parallax */}
+        <RevealSection className="py-24 overflow-hidden">
+          <div className="dc-container">
+            <Parallax distance={50} className="relative aspect-[21/9] w-full rounded-[var(--dc-radius-2xl)] overflow-hidden bg-[var(--dc-surface-2)]">
+              {/* Fallback pattern if we don't have a real workshop photo */}
+              <div className="absolute inset-0 bg-[url('/grid-bg.svg')] bg-center opacity-10" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[var(--dc-text-muted)] tracking-widest uppercase text-sm font-bold flex items-center gap-2">
+                  <Wrench size={16} /> 
+                  Daddu Charger Workshop · Rawalpindi
+                </span>
+              </div>
+            </Parallax>
+          </div>
+        </RevealSection>
+
+        {/* Values Grid */}
+        <RevealSection className="dc-container py-20">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-display font-bold mb-6">Our Standards</h2>
+            <p className="text-[var(--dc-text-muted)] max-w-2xl mx-auto text-lg">
+              We hold ourselves to the highest standards in the industry. Because your frames depend on it.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <ValueCard 
+              icon={<Zap />}
+              title="No Bottlenecks"
+              desc="We pair components that make sense. No high-end GPUs choked by budget CPUs or slow memory."
+            />
+            <ValueCard 
+              icon={<Shield />}
+              title="Authorized Hardware"
+              desc="We only source from official distributors. Every component is authentic and carries full local warranty support."
+            />
+            <ValueCard 
+              icon={<Wrench />}
+              title="Obsessive Cable Management"
+              desc="Airflow matters. Aesthetics matter. Our cable runs are routed perfectly, even behind the motherboard tray where you can't see them."
+            />
+            <ValueCard 
+              icon={<MonitorPlay />}
+              title="Plug & Play Ready"
+              desc="Windows installed, BIOS updated, XMP enabled, drivers loaded, and bloatware removed. Ready to game out of the box."
+            />
+          </div>
+        </RevealSection>
+
+        <ClosingCTA />
+      </PageShell>
       <SiteFooter />
     </>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center text-center px-4">
+      <span className="text-4xl md:text-5xl font-display font-bold text-[var(--dc-text)] mb-2">{value}</span>
+      <span className="text-xs font-bold uppercase tracking-widest text-[var(--dc-text-subtle)]">{label}</span>
+    </div>
+  );
+}
+
+function ValueCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="p-8 rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)] group hover:border-[var(--dc-accent)] transition-colors duration-[var(--dc-duration-normal)]">
+      <div className="w-12 h-12 rounded-[var(--dc-radius-xl)] bg-[var(--dc-bg)] border border-[var(--dc-border)] flex items-center justify-center text-[var(--dc-text)] mb-6 group-hover:text-[var(--dc-accent)] group-hover:border-[var(--dc-accent)] transition-colors">
+        {icon}
+      </div>
+      <h3 className="text-xl font-bold text-[var(--dc-text)] mb-3">{title}</h3>
+      <p className="text-[var(--dc-text-muted)] leading-relaxed">{desc}</p>
+    </div>
   );
 }

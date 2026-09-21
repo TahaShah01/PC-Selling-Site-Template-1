@@ -35,6 +35,10 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   // Use the Lenis-aware scroll lock so we don't cause layout shifts
   useScrollLock(isOpen);
 
+  const FREE_SHIPPING_THRESHOLD = 50000; // 50,000 PKR
+  const progress = Math.min((cart.subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
+  const amountLeft = FREE_SHIPPING_THRESHOLD - cart.subtotal;
+
   // Close on Escape key
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -83,7 +87,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 260, mass: 0.8 }}
             className="fixed top-0 right-0 bottom-0 z-[var(--dc-z-modal)] w-full max-w-[420px] flex flex-col bg-[var(--dc-surface)] border-l border-[var(--dc-border)]"
-            style={{ boxShadow: "-32px 0 80px rgba(0,0,0,0.7)" }}
+            style={{ boxShadow: "var(--dc-shadow-xl)" }}
           >
             {/* ── Accent hairline at top ── */}
             <div className="h-px w-full bg-[var(--dc-accent)] opacity-60" aria-hidden="true" />
@@ -127,6 +131,24 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </div>
             </div>
 
+            {/* ── Free Shipping Progress ── */}
+            <div className="px-6 py-4 bg-[var(--dc-surface-2)] border-b border-[var(--dc-border)]">
+              <div className="flex justify-between text-xs font-medium mb-2">
+                <span className="text-[var(--dc-text)]">
+                  {progress >= 100 ? "You've unlocked free shipping!" : `Add ${formatPrice(amountLeft)} for free shipping`}
+                </span>
+                <span className="text-[var(--dc-text-muted)]">{Math.floor(progress)}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-[var(--dc-bg)] rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-[var(--dc-accent)]"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.8, ease: EASE.out }}
+                />
+              </div>
+            </div>
+
             {/* ── Cart Items ── */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
               {cart.items.length === 0 ? (
@@ -151,7 +173,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <Link
                           href={`/shop/${item.product.slug}`}
                           onClick={onClose}
-                          className="group shrink-0 relative w-[72px] h-[72px] rounded-[var(--dc-radius-lg)] bg-[var(--dc-surface-2)] border border-[var(--dc-border)] hover:border-[var(--dc-border-accent)] transition-colors overflow-hidden flex items-center justify-center p-2"
+                          className="group shrink-0 relative w-[80px] h-[80px] rounded-[var(--dc-radius-lg)] bg-[var(--dc-bg)] border border-[var(--dc-border)] hover:border-[var(--dc-accent)] transition-colors overflow-hidden flex items-center justify-center p-2"
                           aria-label={item.product.title}
                           tabIndex={-1}
                         >
@@ -160,7 +182,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                               src={item.product.images[0].src}
                               alt={item.product.title}
                               fill
-                              className="object-contain mix-blend-screen group-hover:scale-105 transition-transform duration-300"
+                              className="object-contain dark:mix-blend-screen group-hover:scale-105 transition-transform duration-300"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
@@ -247,7 +269,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-[var(--dc-text-muted)]">Shipping</span>
                       <span className="text-xs font-medium text-[var(--dc-text-subtle)]">
-                        Calculated on WhatsApp
+                        {progress >= 100 ? <span className="text-[var(--dc-accent)] font-bold">FREE</span> : "Calculated on WhatsApp"}
                       </span>
                     </div>
                     <div className="h-px w-full bg-[var(--dc-border)]" />
@@ -278,7 +300,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </button>
 
                   <p className="text-[11px] text-center text-[var(--dc-text-subtle)] mt-3 leading-relaxed">
-                    We'll confirm your order, shipping cost & payment details over WhatsApp.
+                    We&apos;ll confirm your order, shipping cost & payment details over WhatsApp.
                   </p>
                 </motion.div>
               )}
@@ -310,7 +332,7 @@ function EmptyCart({ onClose }: { onClose: () => void }) {
           Your cart is empty
         </p>
         <p className="text-sm text-[var(--dc-text-subtle)] max-w-[220px] mx-auto leading-relaxed">
-          Add some gear and it'll show up here.
+          Add some gear and it&apos;ll show up here.
         </p>
       </div>
       <Link

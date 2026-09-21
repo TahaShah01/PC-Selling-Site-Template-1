@@ -4,7 +4,9 @@
    See /docs/DESIGN_SYSTEM.md for usage reference.
    ============================================================ */
 
-:root {
+:root,
+.dark,
+[data-theme="dark"] {
 
   /* ─────────────────────────────────────────────────────────
      BACKGROUNDS
@@ -173,8 +175,67 @@
   --dc-duration-cinematic: 1000ms;
 
   /* ─────────────────────────────────────────────────────────
-     HEADER
+     HEADER & MENU SURFACES
   ───────────────────────────────────────────────────────── */
   --dc-header-height: 72px;
   --dc-header-height-mobile: 60px;
+  --dc-header-bg: rgba(8, 8, 8, 0.72);
+  --dc-menu-bg: rgba(10, 10, 10, 0.95);
+}
+
+/* ─────────────────────────────────────────────────────────
+   LIGHT MODE TOKENS
+   Architectural tech palette: crisp porcelain, deep graphite ink,
+   and calibrated electric volt green.
+───────────────────────────────────────────────────────── */
+.light,
+[data-theme="light"] {
+  /* BACKGROUNDS */
+  --dc-bg: #F6F8FA;
+  --dc-bg-elevated: #FFFFFF;
+  --dc-surface: #FFFFFF;
+  --dc-surface-2: #EEF1F4;
+  --dc-surface-3: #E1E5E9;
+  --dc-card: #FFFFFF;
+  --dc-card-hover: #F8FAFC;
+  --dc-overlay: rgba(246, 248, 250, 0.88);
+  --dc-scrim: rgba(255, 255, 255, 0.95);
+  --dc-header-bg: rgba(246, 248, 250, 0.85);
+  --dc-menu-bg: rgba(255, 255, 255, 0.98);
+
+  /* TEXT */
+  --dc-text: #0E1117;
+  --dc-text-muted: #4F5666;
+  --dc-text-subtle: #848B98;
+  --dc-text-inverse: #FFFFFF;
+
+  /* BORDERS */
+  --dc-border: rgba(14, 17, 23, 0.08);
+  --dc-border-strong: rgba(14, 17, 23, 0.16);
+  --dc-border-accent: rgba(140, 204, 0, 0.5);
+
+  /* PRIMARY ACCENT — CALIBRATED ELECTRIC VOLT */
+  --dc-accent: #9EE300;
+  --dc-accent-hover: #8ED000;
+  --dc-accent-dim: rgba(158, 227, 0, 0.16);
+  --dc-accent-text: #080D01;
+
+  /* SECONDARY ACCENT — EMBER ORANGE */
+  --dc-accent-2: #FF5A1F;
+  --dc-accent-2-hover: #E84D15;
+  --dc-accent-2-dim: rgba(255, 90, 31, 0.12);
+
+  /* STATUS COLORS */
+  --dc-success: #16A34A;
+  --dc-warning: #D97706;
+  --dc-error: #DC2626;
+  --dc-info: #2563EB;
+
+  /* SHADOWS */
+  --dc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --dc-shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  --dc-shadow-lg: 0 12px 32px -4px rgba(0, 0, 0, 0.09), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+  --dc-shadow-xl: 0 24px 64px -8px rgba(0, 0, 0, 0.12);
+  --dc-shadow-accent: 0 4px 20px rgba(158, 227, 0, 0.28);
+  --dc-shadow-accent-strong: 0 8px 36px rgba(158, 227, 0, 0.42);
 }

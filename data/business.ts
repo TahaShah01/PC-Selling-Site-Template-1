@@ -16,6 +16,7 @@ export const BUSINESS = {
   country: "Pakistan",
   address: "[CONFIRM WITH CLIENT]", // Full street address needed
   postalCode: "[CONFIRM WITH CLIENT]",
+  mapsLink: "https://maps.google.com/?q=Rawalpindi+Pakistan", // [CONFIRM WITH CLIENT]
   coordinates: {
     lat: 33.597, // Approximate Rawalpindi center
     lng: 73.0479,

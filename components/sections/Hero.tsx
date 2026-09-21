@@ -172,11 +172,13 @@ export function Hero({ ready = true }: { ready?: boolean }) {
     >
       <div ref={contentRef} className="sticky top-0 h-screen flex flex-col justify-end">
         {/* ── Pointer-tracked glow ── */}
-        <motion.div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0"
-          style={{ background: glowBg }}
-        />
+        {!reduced && (
+          <motion.div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-0"
+            style={{ background: glowBg }}
+          />
+        )}
 
         {/* ── Ambient base glow (always present) ── */}
         <div
@@ -194,15 +196,21 @@ export function Hero({ ready = true }: { ready?: boolean }) {
           aria-hidden="true"
           className="absolute inset-y-0 right-0 z-0 w-full lg:w-[58%]"
         >
-          {/* Tilt layer: Framer owns the pointer-driven 3D tilt */}
+          {/* Tilt layer: Framer owns the pointer-driven 3D tilt, and
+              this time it actually gets a perspective to tilt into
+              because transformPerspective is set on a motion element. */}
           <motion.div
             ref={tiltRef}
             className="absolute inset-0"
-            style={{
-              transformPerspective: 1200,
-              rotateY: rigTiltY,
-              rotateX: rigTiltX,
-            }}
+            style={
+              reduced
+                ? undefined
+                : {
+                  transformPerspective: 1200,
+                  rotateY: rigTiltY,
+                  rotateX: rigTiltX,
+                }
+            }
           >
             <Image
               src="/hero-pc.jpg"

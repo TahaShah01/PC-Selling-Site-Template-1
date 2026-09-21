@@ -1,64 +1,75 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Plus, Check, RefreshCcw, Cpu, Gpu, Server, Database, Box, Fan, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { Container, Section } from "@/components/primitives/Container";
-import { Cpu, Server, CircuitBoard, Zap, HardDrive, MemoryStick, Box, Wind, Check, X } from "lucide-react";
+import { PageHero, PageShell } from "@/components/sections/PageHero";
 import { Button } from "@/components/primitives/Button";
 import { formatPrice } from "@/lib/utils";
-import { useCartStore } from "@/lib/store/cart";
 import { MOCK_PRODUCTS } from "@/data/products";
-import type { Product } from "@/types";
+import { COMPATIBILITY_ENGINE } from "@/lib/compatibility/engine";
 
-// Categories mapped to the mock data 'category' values
-const BUILDER_CATEGORIES = [
-  { id: "cpu", slug: "processors", name: "Processor (CPU)", icon: CircuitBoard, required: true },
-  { id: "motherboard", slug: "motherboards", name: "Motherboard", icon: Server, required: true },
-  { id: "memory", slug: "ram", name: "Memory (RAM)", icon: MemoryStick, required: true },
-  { id: "gpu", slug: "graphics-cards", name: "Graphics Card (GPU)", icon: Cpu, required: false },
-  { id: "storage", slug: "storage", name: "Storage", icon: HardDrive, required: true },
-  { id: "cooling", slug: "cooling", name: "CPU Cooler", icon: Wind, required: true },
-  { id: "power", slug: "power-supplies", name: "Power Supply", icon: Zap, required: true },
-  { id: "case", slug: "cases", name: "Case", icon: Box, required: true },
+type BuilderCategory = {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  productCategory: string;
+  required: boolean;
+};
+
+const CATEGORIES: BuilderCategory[] = [
+  { id: "cpu", name: "Processor", icon: <Cpu size={20} />, productCategory: "processors", required: true },
+  { id: "motherboard", name: "Motherboard", icon: <Box size={20} />, productCategory: "motherboards", required: true },
+  { id: "ram", name: "Memory", icon: <Server size={20} />, productCategory: "ram", required: true },
+  { id: "gpu", name: "Graphics Card", icon: <Gpu size={20} />, productCategory: "graphics-cards", required: true },
+  { id: "storage", name: "Storage", icon: <Database size={20} />, productCategory: "storage", required: true },
+  { id: "cooler", name: "CPU Cooler", icon: <Fan size={20} />, productCategory: "cooling", required: true },
+  { id: "psu", name: "Power Supply", icon: <Zap size={20} />, productCategory: "power-supplies", required: true },
+  { id: "case", name: "Case", icon: <Box size={20} />, productCategory: "cases", required: true },
 ];
 
-export default function PCBuilderPage() {
-  const [selectedParts, setSelectedParts] = React.useState<Record<string, Product>>({});
+export default function BuildPCPage() {
+  const [selectedParts, setSelectedParts] = React.useState<Record<string, any>>({});
   const [activeCategory, setActiveCategory] = React.useState<string | null>(null);
+  const [warnings, setWarnings] = React.useState<string[]>([]);
   
-  const { addToCart, setIsOpen } = useCartStore();
+  // Real-time animated total
+  const rawTotal = Object.values(selectedParts).reduce((sum, p) => sum + (p.priceSale ?? p.priceRegular), 0);
+  const [displayTotal, setDisplayTotal] = React.useState(rawTotal);
 
-  const total = Object.values(selectedParts).reduce(
-    (acc, part) => acc + (part?.priceSale ?? part?.priceRegular ?? 0), 0
-  );
+  React.useEffect(() => {
+    // Simple number interpolation for price
+    let startTime: number;
+    const startVal = displayTotal;
+    const endVal = rawTotal;
+    const duration = 500; // ms
 
-  // Helper to determine if a product is compatible with currently selected parts
-  const isCompatible = (product: Product, categorySlug: string) => {
-    // Basic socket compatibility between CPU and Motherboard
-    if (categorySlug === "motherboards" && selectedParts["cpu"]) {
-      const cpuSocket = selectedParts["cpu"].specs?.["Socket"];
-      const moboSocket = product.specs?.["Socket"];
-      if (cpuSocket && moboSocket && !moboSocket.includes(cpuSocket)) {
-        return false;
-      }
-    }
-    if (categorySlug === "processors" && selectedParts["motherboard"]) {
-      const moboSocket = selectedParts["motherboard"].specs?.["Socket"];
-      const cpuSocket = product.specs?.["Socket"];
-      if (cpuSocket && moboSocket && !moboSocket.includes(cpuSocket)) {
-        return false;
-      }
-    }
-    return true;
-  };
+    const animate = (time: number) => {
+      if (!startTime) startTime = time;
+      const progress = Math.min((time - startTime) / duration, 1);
+      // easeOutExpo
+      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      setDisplayTotal(Math.floor(startVal + (endVal - startVal) * ease));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [rawTotal]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSelectPart = (categoryId: string, product: Product) => {
+  React.useEffect(() => {
+    // Re-run compatibility check when parts change
+    setWarnings(COMPATIBILITY_ENGINE.check(selectedParts));
+  }, [selectedParts]);
+
+  const handleSelect = (categoryId: string, product: any) => {
     setSelectedParts(prev => ({ ...prev, [categoryId]: product }));
     setActiveCategory(null);
   };
 
-  const handleRemovePart = (categoryId: string) => {
+  const handleRemove = (categoryId: string) => {
     setSelectedParts(prev => {
       const next = { ...prev };
       delete next[categoryId];
@@ -66,203 +77,225 @@ export default function PCBuilderPage() {
     });
   };
 
-  const handleAddBuildToCart = () => {
-    Object.values(selectedParts).forEach(part => {
-      addToCart(part, 1);
-    });
-    setIsOpen(true);
-  };
-
-  // Get products for the active modal category
-  const activeCategoryDef = BUILDER_CATEGORIES.find(c => c.id === activeCategory);
-  const availableProducts = activeCategoryDef 
-    ? MOCK_PRODUCTS.filter(p => p.category === activeCategoryDef.slug) 
-    : [];
-
   return (
     <>
       <SiteHeader />
-      <main className="pt-[calc(var(--dc-header-height)+2rem)] min-h-screen relative">
-        <Section className="pb-8">
-          <Container>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[var(--dc-border)] pb-8 mb-8">
-              <div>
-                <p className="dc-eyebrow mb-2">Interactive Tool</p>
-                <h1 className="text-4xl font-display font-bold text-[var(--dc-text)] mb-3">
-                  Custom PC Builder
-                </h1>
-                <p className="text-[var(--dc-text-muted)] max-w-2xl">
-                  Select compatible parts to build your dream PC. Our system filters out incompatible components automatically.
-                </p>
-              </div>
-              <div className="bg-[var(--dc-surface-2)] p-6 rounded-[var(--dc-radius-xl)] border border-[var(--dc-border)] min-w-[240px] shrink-0">
-                <p className="text-sm text-[var(--dc-text-subtle)] font-medium mb-1">Estimated Total</p>
-                <p className="text-3xl font-bold text-[var(--dc-text)]">{formatPrice(total)}</p>
-              </div>
-            </div>
+      <PageShell>
+        <PageHero
+          eyebrow="Custom Configurator"
+          headline={["Build Your", "Dream PC"]}
+          body="Select components. We check compatibility automatically. We build, test, and ship it to you."
+          size="sm"
+        />
 
-            <div className="grid lg:grid-cols-3 gap-8 relative">
-              {/* Builder Steps */}
-              <div className="lg:col-span-2 space-y-4">
-                {BUILDER_CATEGORIES.map((category) => {
-                  const selectedProduct = selectedParts[category.id];
-                  
-                  return (
-                    <div key={category.id} className="bg-[var(--dc-card)] border border-[var(--dc-border)] rounded-[var(--dc-radius-xl)] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors hover:border-[var(--dc-border-accent)]">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-[var(--dc-radius-lg)] bg-[var(--dc-surface)] flex items-center justify-center text-[var(--dc-text-muted)] shrink-0">
-                          <category.icon size={24} />
+        <div className="dc-container py-12">
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+            
+            {/* Left: The Builder Rows */}
+            <div className="flex-1 space-y-4">
+              {CATEGORIES.map((cat) => {
+                const selected = selectedParts[cat.id];
+                
+                return (
+                  <div 
+                    key={cat.id} 
+                    className={`rounded-[var(--dc-radius-xl)] border transition-colors duration-[var(--dc-duration-normal)] bg-[var(--dc-surface)] p-4 sm:p-6 ${
+                      selected ? "border-[var(--dc-border-accent)]" : "border-[var(--dc-border)] hover:border-[var(--dc-border-strong)]"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                      
+                      {/* Icon & Label */}
+                      <div className="flex items-center gap-4 sm:w-48 shrink-0">
+                        <div className={`flex h-12 w-12 items-center justify-center rounded-[var(--dc-radius-lg)] border ${
+                          selected ? "bg-[var(--dc-accent)]/10 border-[var(--dc-accent)]/30 text-[var(--dc-accent)]" : "bg-[var(--dc-bg)] border-[var(--dc-border)] text-[var(--dc-text-muted)]"
+                        }`}>
+                          {cat.icon}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-[var(--dc-text)] flex items-center gap-2">
-                            {category.name}
-                            {category.required && <span className="text-[10px] uppercase tracking-wider bg-[var(--dc-surface-2)] text-[var(--dc-text-subtle)] px-2 py-0.5 rounded-full">Required</span>}
-                          </h3>
-                          {selectedProduct ? (
-                            <p className="text-sm text-[var(--dc-accent)] mt-1 font-medium">{selectedProduct.title}</p>
-                          ) : (
-                            <p className="text-sm text-[var(--dc-text-subtle)] mt-1">Please select a component</p>
-                          )}
+                          <p className="font-bold text-[var(--dc-text)]">{cat.name}</p>
+                          {cat.required && <p className="text-[10px] uppercase tracking-wider text-[var(--dc-text-subtle)]">Required</p>}
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end shrink-0">
-                        {selectedProduct && (
-                          <span className="font-semibold text-sm">{formatPrice(selectedProduct.priceSale ?? selectedProduct.priceRegular)}</span>
-                        )}
-                        {selectedProduct ? (
-                           <div className="flex gap-2">
-                             <Button variant="secondary" size="sm" onClick={() => setActiveCategory(category.id)}>
-                               Change
-                             </Button>
-                             <button onClick={() => handleRemovePart(category.id)} className="w-9 h-9 flex items-center justify-center rounded-[var(--dc-radius-md)] border border-[var(--dc-border)] text-[var(--dc-text-muted)] hover:text-[var(--dc-danger)] hover:border-[var(--dc-danger)] transition-colors">
-                               <X size={16} />
-                             </button>
-                           </div>
+
+                      {/* Selected Item OR Add Button */}
+                      <div className="flex-1">
+                        {selected ? (
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                              <div className="relative h-12 w-12 shrink-0 bg-[var(--dc-bg)] rounded-[var(--dc-radius-md)] border border-[var(--dc-border)] p-1 overflow-hidden">
+                                {selected.images?.[0] && (
+                                  <Image src={selected.images[0].src} alt={selected.title} fill className="object-contain p-1" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-[var(--dc-text)] line-clamp-1">{selected.title}</p>
+                                <p className="text-xs font-bold text-[var(--dc-accent)]">{formatPrice(selected.priceSale ?? selected.priceRegular)}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button 
+                                onClick={() => setActiveCategory(cat.id)}
+                                className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--dc-border)] text-[var(--dc-text-subtle)] hover:border-[var(--dc-text)] hover:text-[var(--dc-text)] transition-colors"
+                                title="Change component"
+                              >
+                                <RefreshCcw size={14} />
+                              </button>
+                            </div>
+                          </div>
                         ) : (
-                          <Button variant="primary" size="sm" onClick={() => setActiveCategory(category.id)}>
-                            Choose
-                          </Button>
+                          <button
+                            onClick={() => setActiveCategory(cat.id)}
+                            className="flex w-full items-center justify-center gap-2 rounded-[var(--dc-radius-lg)] border border-[var(--dc-border-dashed)] bg-transparent py-4 text-sm font-medium text-[var(--dc-text-muted)] transition-colors hover:border-[var(--dc-accent)] hover:bg-[var(--dc-accent)]/5 hover:text-[var(--dc-accent)]"
+                          >
+                            <Plus size={16} /> Choose {cat.name}
+                          </button>
                         )}
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
 
-              {/* Build Summary Sidebar */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-[calc(var(--dc-header-height)+2rem)] bg-[var(--dc-card)] border border-[var(--dc-border)] rounded-[var(--dc-radius-2xl)] p-6">
-                  <h3 className="text-xl font-bold mb-6">Build Summary</h3>
-                  
-                  <div className="space-y-4 mb-6">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-[var(--dc-text-muted)]">Components</span>
-                      <span className="text-[var(--dc-text)]">{formatPrice(total)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-[var(--dc-text-muted)]">Assembly & Testing</span>
-                      <span className="text-[var(--dc-success)]">Free</span>
                     </div>
                   </div>
+                );
+              })}
+            </div>
 
-                  <div className="border-t border-[var(--dc-border)] pt-4 mb-6">
-                    <div className="flex justify-between items-end">
-                      <span className="font-semibold text-[var(--dc-text)]">Total</span>
-                      <span className="text-2xl font-bold text-[var(--dc-text)]">{formatPrice(total)}</span>
-                    </div>
-                  </div>
-
-                  <Button 
-                    variant="primary" 
-                    size="lg" 
-                    className="w-full" 
-                    disabled={total === 0}
-                    onClick={handleAddBuildToCart}
-                  >
-                    Add Build to Cart
-                  </Button>
-                  
-                  <p className="text-xs text-center text-[var(--dc-text-subtle)] mt-4">
-                    All custom builds include a 1-year service warranty and extensive stress testing before dispatch.
-                  </p>
+            {/* Right: Summary Sticky Sidebar */}
+            <div className="w-full lg:w-80 shrink-0">
+              <div className="sticky top-[calc(var(--dc-header-height)+2rem)] rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-surface-2)] p-6">
+                <h3 className="font-display text-xl font-bold mb-6">Build Summary</h3>
+                
+                <div className="flex items-end justify-between mb-8 pb-6 border-b border-[var(--dc-border)]">
+                  <span className="text-sm font-medium text-[var(--dc-text-subtle)]">Total Price</span>
+                  <span className="font-display text-3xl font-bold text-[var(--dc-accent)] tracking-tight">
+                    {formatPrice(displayTotal)}
+                  </span>
                 </div>
+
+                {warnings.length > 0 && (
+                  <div className="mb-6 rounded-[var(--dc-radius-lg)] bg-red-500/10 border border-red-500/20 p-4">
+                    <p className="text-xs font-bold uppercase text-red-500 mb-2 tracking-wider">Compatibility Warnings</p>
+                    <ul className="space-y-1 text-sm text-red-400">
+                      {warnings.map((w, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="mt-1 block h-1 w-1 shrink-0 rounded-full bg-red-500" />
+                          <span>{w}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center gap-2 text-sm text-[var(--dc-text-muted)]">
+                    <Check size={16} className="text-[var(--dc-accent)]" /> Professional Assembly
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[var(--dc-text-muted)]">
+                    <Check size={16} className="text-[var(--dc-accent)]" /> Windows + Drivers Setup
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[var(--dc-text-muted)]">
+                    <Check size={16} className="text-[var(--dc-accent)]" /> 48-Hour Burn-in Test
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[var(--dc-text-muted)]">
+                    <Check size={16} className="text-[var(--dc-accent)]" /> 1-Year Service Warranty
+                  </div>
+                </div>
+
+                <Button 
+                  size="lg" 
+                  variant="primary" 
+                  className="w-full"
+                  disabled={Object.keys(selectedParts).length < CATEGORIES.filter(c => c.required).length || warnings.length > 0}
+                >
+                  Proceed to Checkout
+                </Button>
+                
+                {Object.keys(selectedParts).length < CATEGORIES.filter(c => c.required).length && (
+                  <p className="text-center text-xs text-[var(--dc-text-subtle)] mt-4">
+                    Select all required components to proceed.
+                  </p>
+                )}
               </div>
-            </div>
-          </Container>
-        </Section>
-      </main>
-
-      {/* ─── SELECTION MODAL ─── */}
-      {activeCategory && (
-        <div className="fixed inset-0 z-[var(--dc-z-modal)] bg-[var(--dc-overlay)] backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
-          <div className="bg-[var(--dc-surface)] w-full max-w-4xl max-h-[90vh] rounded-[var(--dc-radius-2xl)] shadow-2xl border border-[var(--dc-border)] flex flex-col overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-[var(--dc-border)] shrink-0">
-              <h2 className="text-2xl font-bold font-display">
-                Select {activeCategoryDef?.name}
-              </h2>
-              <button 
-                onClick={() => setActiveCategory(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--dc-surface-2)] text-[var(--dc-text-muted)] hover:text-[var(--dc-text)] transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Modal Content / Products Grid */}
-            <div className="flex-1 overflow-y-auto p-6">
-               {availableProducts.length === 0 ? (
-                 <p className="text-center text-[var(--dc-text-muted)] py-12">No products found in this category.</p>
-               ) : (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   {availableProducts.map(product => {
-                     const compatible = isCompatible(product, activeCategoryDef!.slug);
-                     
-                     return (
-                       <div 
-                         key={product.id}
-                         className={`p-4 rounded-[var(--dc-radius-xl)] border flex flex-col gap-3 transition-colors ${
-                           compatible 
-                            ? "border-[var(--dc-border)] hover:border-[var(--dc-border-accent)] bg-[var(--dc-card)]" 
-                            : "border-[var(--dc-border-dashed)] opacity-50 grayscale cursor-not-allowed"
-                         }`}
-                       >
-                         <div>
-                           <p className="text-[10px] uppercase font-bold text-[var(--dc-text-subtle)] mb-1">{product.brand}</p>
-                           <h4 className="font-medium text-sm line-clamp-2">{product.title}</h4>
-                         </div>
-                         
-                         {/* Optional basic specs for quick view */}
-                         {product.specs && Object.keys(product.specs).length > 0 && (
-                           <div className="text-xs text-[var(--dc-text-muted)] space-y-0.5">
-                             {Object.entries(product.specs).slice(0, 2).map(([k, v]) => (
-                               <p key={k}><span className="text-[var(--dc-text-subtle)]">{k}:</span> {v}</p>
-                             ))}
-                           </div>
-                         )}
-                         
-                         <div className="mt-auto flex items-center justify-between pt-3 border-t border-[var(--dc-border)]">
-                           <span className="font-bold text-sm">{formatPrice(product.priceSale ?? product.priceRegular)}</span>
-                           {compatible ? (
-                             <Button size="sm" onClick={() => handleSelectPart(activeCategory, product)}>
-                               Select
-                             </Button>
-                           ) : (
-                             <span className="text-xs text-[var(--dc-danger)] font-medium bg-[rgba(239,68,68,0.1)] px-2 py-1 rounded">Incompatible</span>
-                           )}
-                         </div>
-                       </div>
-                     );
-                   })}
-                 </div>
-               )}
             </div>
           </div>
         </div>
-      )}
 
+        {/* Selection Modal Overlay */}
+        <AnimatePresence>
+          {activeCategory && (
+            <SelectionModal 
+              category={CATEGORIES.find(c => c.id === activeCategory)!}
+              onClose={() => setActiveCategory(null)}
+              onSelect={(p) => handleSelect(activeCategory, p)}
+            />
+          )}
+        </AnimatePresence>
+
+      </PageShell>
       <SiteFooter />
     </>
+  );
+}
+
+function SelectionModal({ 
+  category, 
+  onClose, 
+  onSelect 
+}: { 
+  category: BuilderCategory; 
+  onClose: () => void;
+  onSelect: (p: any) => void;
+}) {
+  const products = MOCK_PRODUCTS.filter(p => p.category === category.productCategory);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-[var(--dc-overlay)] backdrop-blur-sm"
+      />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="relative flex h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-bg)] shadow-2xl"
+      >
+        <div className="flex items-center justify-between border-b border-[var(--dc-border)] bg-[var(--dc-surface)] p-6">
+          <div>
+            <h2 className="text-xl font-display font-bold text-[var(--dc-text)]">Select {category.name}</h2>
+            <p className="text-sm text-[var(--dc-text-muted)]">{products.length} options available</p>
+          </div>
+          <button 
+            onClick={onClose}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--dc-border)] hover:bg-[var(--dc-surface-2)] transition-colors"
+          >
+            <Plus size={20} className="rotate-45" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map(product => (
+              <div 
+                key={product.id}
+                onClick={() => onSelect(product)}
+                className="group cursor-pointer rounded-[var(--dc-radius-xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)] p-4 transition-all hover:border-[var(--dc-accent)]"
+              >
+                <div className="relative mb-4 aspect-[4/3] w-full rounded-[var(--dc-radius-lg)] bg-[var(--dc-bg)] p-4">
+                  {product.images?.[0] && (
+                    <Image src={product.images[0].src} alt={product.title} fill className="object-contain p-2 group-hover:scale-110 transition-transform duration-500" />
+                  )}
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[var(--dc-text-subtle)] mb-1">{product.brand}</p>
+                <p className="text-sm font-semibold text-[var(--dc-text)] line-clamp-2 mb-3 group-hover:text-[var(--dc-accent)] transition-colors">{product.title}</p>
+                <p className="text-lg font-bold text-[var(--dc-text)]">{formatPrice(product.priceSale ?? product.priceRegular)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 }

@@ -22,29 +22,29 @@ export const PRIMARY_NAV: NavItem[] = [
   },
   {
     label: "Components",
-    href: "/processors",
+    href: "/components/processors",
     children: [
-      { label: "Processors (CPU)", href: "/processors" },
-      { label: "Motherboards", href: "/motherboards" },
-      { label: "Graphics Cards", href: "/graphics-cards" },
-      { label: "RAM", href: "/ram" },
-      { label: "Storage", href: "/storage" },
-      { label: "Power Supplies", href: "/power-supplies" },
-      { label: "Cooling", href: "/cooling" },
+      { label: "Processors (CPU)", href: "/components/processors" },
+      { label: "Motherboards", href: "/components/motherboards" },
+      { label: "Graphics Cards", href: "/components/graphics-cards" },
+      { label: "RAM", href: "/components/ram" },
+      { label: "Storage", href: "/components/storage" },
+      { label: "Power Supplies", href: "/components/power-supplies" },
+      { label: "Cooling", href: "/components/cooling" },
     ],
   },
   {
     label: "Peripherals",
-    href: "/monitors",
+    href: "/gaming/monitors",
     children: [
-      { label: "Monitors", href: "/monitors" },
-      { label: "Keyboards", href: "/keyboards" },
-      { label: "Mice", href: "/mice" },
-      { label: "Headsets", href: "/headsets" },
-      { label: "Controllers", href: "/controllers" },
-      { label: "Racing Wheels", href: "/racing-wheels" },
-      { label: "Chairs", href: "/chairs" },
-      { label: "Cases", href: "/cases" },
+      { label: "Monitors", href: "/gaming/monitors" },
+      { label: "Keyboards", href: "/gaming/keyboards" },
+      { label: "Mice", href: "/gaming/mice" },
+      { label: "Headsets", href: "/gaming/headsets" },
+      { label: "Controllers", href: "/gaming/controllers" },
+      { label: "Racing Wheels", href: "/gaming/racing-wheels" },
+      { label: "Chairs", href: "/gaming/chairs" },
+      { label: "Cases", href: "/gaming/cases" },
     ],
   },
   {
@@ -56,6 +56,10 @@ export const PRIMARY_NAV: NavItem[] = [
     label: "About",
     href: "/about",
   },
+  {
+    label: "Contact",
+    href: "/contact",
+  },
 ];
 
 export const FOOTER_NAV = {
@@ -64,7 +68,7 @@ export const FOOTER_NAV = {
     items: [
       { label: "Gaming PCs", href: "/gaming-pcs" },
       { label: "Components", href: "/shop" },
-      { label: "Peripherals", href: "/monitors" },
+      { label: "Peripherals", href: "/gaming/monitors" },
       { label: "New Arrivals", href: "/latest" },
       { label: "Sale", href: "/sale" },
     ],

@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Filter, SlidersHorizontal, Grid3X3, List, X, ChevronDown } from "lucide-react";
 import { useGSAP } from "@gsap/react";
-import { gsap } from "../../lib/gsap";
+import { gsap } from "../../../lib/gsap";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { PageHero, PageShell } from "@/components/sections/PageHero";
@@ -14,6 +15,22 @@ import { CATEGORIES } from "@/data/categories";
 import { MOCK_PRODUCTS } from "@/data/products";
 import { EASE, inViewOnce, DUR } from "@/lib/motion/Motion";
 
+/* ─────────────────────────────────────────────────────────
+   GAMING CATEGORY PAGE  /gaming/[slug]
+   e.g. /gaming/monitors, /gaming/keyboards
+───────────────────────────────────────────────────────── */
+
+const GAMING_IDS = [
+  "monitors",
+  "keyboards",
+  "mice",
+  "headsets",
+  "controllers",
+  "cases",
+  "chairs",
+  "racing-wheels",
+];
+
 const SORT_OPTIONS = [
   { value: "featured", label: "Featured" },
   { value: "price-asc", label: "Price: Low to High" },
@@ -21,23 +38,33 @@ const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
 ];
 
-export default function ShopPage() {
+export default function GamingCategoryPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = React.use(params);
+  const category = CATEGORIES.find((c) => c.id === slug);
+
   const [sort, setSort] = React.useState("featured");
   const [inStockOnly, setInStockOnly] = React.useState(false);
-  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
   const [gridView, setGridView] = React.useState<"grid" | "list">("grid");
   const [filterOpen, setFilterOpen] = React.useState(false);
   const gridRef = React.useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
+  const rawProducts = React.useMemo(
+    () => MOCK_PRODUCTS.filter((p) => p.category === slug),
+    [slug]
+  );
+
   const products = React.useMemo(() => {
-    let list = inStockOnly ? MOCK_PRODUCTS.filter((p) => p.inStock) : MOCK_PRODUCTS;
-    if (selectedCategory) list = list.filter((p) => p.category === selectedCategory);
+    let list = inStockOnly ? rawProducts.filter((p) => p.inStock) : rawProducts;
     if (sort === "price-asc") list = [...list].sort((a, b) => (a.priceSale ?? a.priceRegular) - (b.priceSale ?? b.priceRegular));
     if (sort === "price-desc") list = [...list].sort((a, b) => (b.priceSale ?? b.priceRegular) - (a.priceSale ?? a.priceRegular));
     if (sort === "newest") list = [...list].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""));
     return list;
-  }, [sort, inStockOnly, selectedCategory]);
+  }, [rawProducts, sort, inStockOnly]);
 
   /* GSAP clip-path stagger on grid items */
   useGSAP(
@@ -64,15 +91,31 @@ export default function ShopPage() {
     { scope: gridRef, dependencies: [products, reduced] }
   );
 
+  if (!category || !GAMING_IDS.includes(slug)) {
+    return (
+      <>
+        <SiteHeader />
+        <PageShell>
+          <PageHero
+            eyebrow="Gaming"
+            headline={["Category", "not found."]}
+            body="This category doesn't exist. Try browsing the shop."
+          />
+        </PageShell>
+        <SiteFooter />
+      </>
+    );
+  }
+
   return (
     <>
       <SiteHeader />
       <PageShell>
         {/* ── HERO ── */}
         <PageHero
-          eyebrow="Catalogue"
-          headline={["All", "Hardware"]}
-          body="Explore our complete selection of premium components, peripherals, and accessories."
+          eyebrow="Gaming"
+          headline={[category.shortTitle]}
+          body={category.description}
           size="sm"
         />
 
@@ -87,9 +130,9 @@ export default function ShopPage() {
               >
                 <SlidersHorizontal size={14} />
                 Filters
-                {(inStockOnly || selectedCategory) && (
+                {inStockOnly && (
                   <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[var(--dc-accent)] text-[9px] font-bold text-[var(--dc-accent-text)]">
-                    {(inStockOnly ? 1 : 0) + (selectedCategory ? 1 : 0)}
+                    1
                   </span>
                 )}
               </button>
@@ -143,71 +186,29 @@ export default function ShopPage() {
                 transition={{ duration: 0.35, ease: EASE.out }}
                 className="mb-8 overflow-hidden"
               >
-                <div className="rounded-[var(--dc-radius-xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)] p-6">
-                  <div className="grid md:grid-cols-2 gap-8">
-                    {/* Categories */}
-                    <div>
-                      <p className="text-sm font-medium text-[var(--dc-text-subtle)] uppercase tracking-wider mb-4">
-                        Category
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => setSelectedCategory(null)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                            selectedCategory === null
-                              ? "bg-[var(--dc-text)] text-[var(--dc-bg)] border-[var(--dc-text)]"
-                              : "bg-[var(--dc-bg)] text-[var(--dc-text-muted)] border-[var(--dc-border)] hover:border-[var(--dc-accent)]"
-                          }`}
-                        >
-                          All
-                        </button>
-                        {CATEGORIES.map((cat) => (
-                          <button
-                            key={cat.id}
-                            onClick={() => setSelectedCategory(cat.id)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                              selectedCategory === cat.id
-                                ? "bg-[var(--dc-text)] text-[var(--dc-bg)] border-[var(--dc-text)]"
-                                : "bg-[var(--dc-bg)] text-[var(--dc-text-muted)] border-[var(--dc-border)] hover:border-[var(--dc-accent)]"
-                            }`}
-                          >
-                            {cat.shortTitle}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Availability */}
-                    <div>
-                      <p className="text-sm font-medium text-[var(--dc-text-subtle)] uppercase tracking-wider mb-4">
-                        Availability
-                      </p>
-                      <label className="flex cursor-pointer items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={inStockOnly}
-                          onChange={(e) => setInStockOnly(e.target.checked)}
-                          className="h-4 w-4 rounded border-[var(--dc-border)] accent-[var(--dc-accent)]"
-                        />
-                        <span className="text-sm text-[var(--dc-text-muted)]">In Stock Only</span>
-                      </label>
-                    </div>
-                  </div>
-                  
-                  {/* Clear all */}
-                  {(inStockOnly || selectedCategory) && (
-                    <div className="mt-6 pt-6 border-t border-[var(--dc-border)]">
+                <div className="rounded-[var(--dc-radius-xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)] p-5">
+                  <div className="flex flex-wrap items-center gap-6">
+                    <p className="text-sm font-medium text-[var(--dc-text-subtle)] uppercase tracking-wider">
+                      Availability
+                    </p>
+                    <label className="flex cursor-pointer items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={inStockOnly}
+                        onChange={(e) => setInStockOnly(e.target.checked)}
+                        className="h-4 w-4 rounded border-[var(--dc-border)] accent-[var(--dc-accent)]"
+                      />
+                      <span className="text-sm text-[var(--dc-text-muted)]">In Stock Only</span>
+                    </label>
+                    {inStockOnly && (
                       <button
-                        onClick={() => {
-                          setInStockOnly(false);
-                          setSelectedCategory(null);
-                        }}
-                        className="flex items-center gap-1 text-sm text-[var(--dc-text-muted)] hover:text-[var(--dc-text)]"
+                        onClick={() => setInStockOnly(false)}
+                        className="ml-auto flex items-center gap-1 text-xs text-[var(--dc-text-subtle)] hover:text-[var(--dc-text)]"
                       >
-                        <X size={14} /> Clear all filters
+                        <X size={12} /> Clear
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -217,16 +218,13 @@ export default function ShopPage() {
           {products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <p className="text-5xl font-display font-bold text-[var(--dc-border)] mb-4">∅</p>
-              <p className="text-[var(--dc-text-muted)]">No products match your criteria.</p>
-              <button
-                onClick={() => {
-                  setInStockOnly(false);
-                  setSelectedCategory(null);
-                }}
+              <p className="text-[var(--dc-text-muted)]">No products found in this category.</p>
+              <Link
+                href="/shop"
                 className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--dc-accent)] px-6 py-3 text-sm font-semibold text-[var(--dc-accent-text)] hover:opacity-90 transition-opacity"
               >
-                Clear Filters
-              </button>
+                Browse all products
+              </Link>
             </div>
           ) : (
             <div

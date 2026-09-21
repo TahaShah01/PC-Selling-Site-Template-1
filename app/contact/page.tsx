@@ -1,143 +1,218 @@
-import type { Metadata } from "next";
+"use client";
+
+import * as React from "react";
+import { MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { Container, Section } from "@/components/primitives/Container";
+import { PageHero, PageShell, RevealSection } from "@/components/sections/PageHero";
+import { Button } from "@/components/primitives/Button";
 import { BUSINESS } from "@/data/business";
-import { MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
-
-export const metadata: Metadata = {
-  title: "Contact Us",
-  description: "Get in touch with the Daddu Charger team for support, custom build inquiries, or general questions.",
-};
+import { ClosingCTA } from "@/components/sections/ClosingCTA";
 
 export default function ContactPage() {
+  const [timeStr, setTimeStr] = React.useState("...");
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  // Live PKT time & open status
+  React.useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      // Rawalpindi is UTC+5
+      const pktOptions: Intl.DateTimeFormatOptions = { 
+        timeZone: 'Asia/Karachi', 
+        hour: 'numeric', 
+        minute: 'numeric', 
+        hour12: true 
+      };
+      setTimeStr(new Intl.DateTimeFormat('en-US', pktOptions).format(now));
+      
+      const pktHour = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Karachi' })).getHours();
+      // Assume open 11 AM to 9 PM
+      setIsOpen(pktHour >= 11 && pktHour < 21);
+    };
+    
+    updateTime();
+    const interval = setInterval(updateTime, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
       <SiteHeader />
-      <main className="pt-[calc(var(--dc-header-height)+2rem)] min-h-screen">
-        <Section>
-          <Container className="max-w-5xl mx-auto">
-            <div className="text-center mb-16">
-              <p className="dc-eyebrow mb-4">Get in Touch</p>
-              <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--dc-text)] mb-6">
-                We're Here to Help.
-              </h1>
-              <p className="text-lg text-[var(--dc-text-muted)] max-w-2xl mx-auto">
-                Have a question about a custom build, need technical support, or want to check stock? Reach out to our experts.
-              </p>
+      <PageShell>
+        <div className="relative">
+          {/* Split Hero */}
+          <PageHero
+            eyebrow="Contact Support"
+            headline={["Get in", "touch."]}
+            body="Whether you need a custom build quote, technical support, or just want to talk hardware."
+          >
+            {/* Live Status indicator attached to hero */}
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-[var(--dc-border)] bg-[var(--dc-surface)] mt-4">
+              <span className="relative flex h-3 w-3">
+                {isOpen && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--dc-accent)] opacity-75"></span>}
+                <span className={`relative inline-flex rounded-full h-3 w-3 ${isOpen ? "bg-[var(--dc-accent)]" : "bg-red-500"}`}></span>
+              </span>
+              <span className="text-sm font-medium text-[var(--dc-text)]">
+                {isOpen ? "We're currently open" : "We're currently closed"}
+              </span>
+              <span className="text-sm text-[var(--dc-text-subtle)] border-l border-[var(--dc-border)] pl-3 ml-1">
+                Rawalpindi: {timeStr}
+              </span>
             </div>
+          </PageHero>
+        </div>
 
-            <div className="grid md:grid-cols-2 gap-12">
-              {/* Contact Information */}
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Contact Information</h2>
+        <RevealSection className="dc-container py-16 lg:py-24">
+          <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
+            
+            {/* Left: Contact Methods */}
+            <div className="lg:col-span-2 space-y-4">
+              <ContactCard 
+                icon={<MessageCircle />}
+                title="WhatsApp"
+                value={BUSINESS.phone}
+                href={`https://wa.me/${BUSINESS.phone.replace(/[^0-9]/g, '')}`}
+                primary
+              />
+              <ContactCard 
+                icon={<Phone />}
+                title="Phone"
+                value={BUSINESS.phone}
+                href={`tel:${BUSINESS.phone.replace(/[^0-9]/g, '')}`}
+              />
+              <ContactCard 
+                icon={<Mail />}
+                title="Email"
+                value={BUSINESS.email}
+                href={`mailto:${BUSINESS.email}`}
+              />
+              
+              <div className="p-8 rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-surface-2)] mt-8">
+                <div className="flex items-start gap-4">
+                  <MapPin className="text-[var(--dc-text-muted)] mt-1" />
+                  <div>
+                    <h3 className="font-bold text-[var(--dc-text)] mb-2">Daddu Charger Workshop</h3>
+                    <p className="text-[var(--dc-text-muted)] leading-relaxed mb-4">
+                      {BUSINESS.address.split(',').map((line, i) => (
+                        <span key={i} className="block">{line.trim()}</span>
+                      ))}
+                    </p>
+                    <a 
+                      href={(BUSINESS as any).mapsLink || `https://maps.google.com/?q=${encodeURIComponent(BUSINESS.address)}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm font-semibold text-[var(--dc-accent)] hover:underline"
+                    >
+                      Open in Google Maps →
+                    </a>
+                  </div>
+                </div>
                 
-                <div className="space-y-6">
-                  {/* Location */}
-                  <div className="flex gap-4">
-                    <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--dc-surface)] flex items-center justify-center text-[var(--dc-accent)]">
-                      <MapPin size={20} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[var(--dc-text)] mb-1">Visit Our Store</p>
-                      <p className="text-sm text-[var(--dc-text-muted)]">{BUSINESS.address}</p>
-                      <p className="text-sm text-[var(--dc-text-muted)]">{BUSINESS.city}, {BUSINESS.country}</p>
-                    </div>
-                  </div>
-
-                  {/* Phone */}
-                  <div className="flex gap-4">
-                    <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--dc-surface)] flex items-center justify-center text-[var(--dc-accent)]">
-                      <Phone size={20} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[var(--dc-text)] mb-1">Call Us</p>
-                      <p className="text-sm text-[var(--dc-text-muted)]">{BUSINESS.phone}</p>
-                    </div>
-                  </div>
-
-                  {/* WhatsApp */}
-                  <div className="flex gap-4">
-                    <div className="w-10 h-10 shrink-0 rounded-full bg-[#25D366] bg-opacity-10 flex items-center justify-center text-[#25D366]">
-                      <MessageCircle size={20} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[var(--dc-text)] mb-1">WhatsApp Support</p>
-                      <p className="text-sm text-[var(--dc-text-muted)]">{BUSINESS.whatsapp}</p>
-                    </div>
-                  </div>
-
-                  {/* Email */}
-                  <div className="flex gap-4">
-                    <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--dc-surface)] flex items-center justify-center text-[var(--dc-accent)]">
-                      <Mail size={20} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[var(--dc-text)] mb-1">Email</p>
-                      <p className="text-sm text-[var(--dc-text-muted)]">{BUSINESS.email}</p>
-                    </div>
-                  </div>
-
-                  {/* Hours */}
-                  <div className="flex gap-4">
-                    <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--dc-surface)] flex items-center justify-center text-[var(--dc-accent)]">
-                      <Clock size={20} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[var(--dc-text)] mb-1">Business Hours</p>
-                      <p className="text-sm text-[var(--dc-text-muted)]">Mon-Fri: {BUSINESS.hours.weekdays}</p>
-                      <p className="text-sm text-[var(--dc-text-muted)]">Saturday: {BUSINESS.hours.saturday}</p>
-                      <p className="text-sm text-[var(--dc-text-muted)]">Sunday: {BUSINESS.hours.sunday}</p>
+                <div className="flex items-start gap-4 mt-6 pt-6 border-t border-[var(--dc-border)]">
+                  <Clock className="text-[var(--dc-text-muted)] mt-1" />
+                  <div>
+                    <h3 className="font-bold text-[var(--dc-text)] mb-2">Store Hours</h3>
+                    <div className="text-[var(--dc-text-muted)] space-y-1 text-sm">
+                      <p>Mon-Fri: {BUSINESS.hours.weekdays}</p>
+                      <p>Saturday: {BUSINESS.hours.saturday}</p>
+                      <p>Sunday: {BUSINESS.hours.sunday}</p>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Contact Form */}
-              <div className="bg-[var(--dc-card)] border border-[var(--dc-border)] rounded-[var(--dc-radius-2xl)] p-8">
-                <h2 className="text-xl font-bold mb-6">Send a Message</h2>
-                <form className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label htmlFor="firstName" className="text-sm font-medium text-[var(--dc-text-subtle)]">First Name</label>
-                      <input type="text" id="firstName" className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-md)] px-4 py-2 text-sm focus:outline-none focus:border-[var(--dc-accent)]" />
+            {/* Right: Contact Form */}
+            <div className="lg:col-span-3">
+              <div className="p-8 lg:p-10 rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)]">
+                <h2 className="text-2xl font-display font-bold mb-6">Send us a message</h2>
+                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label htmlFor="name" className="text-sm font-medium text-[var(--dc-text-muted)]">Name</label>
+                      <input 
+                        type="text" 
+                        id="name" 
+                        className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors"
+                        placeholder="John Doe"
+                      />
                     </div>
-                    <div className="space-y-1.5">
-                      <label htmlFor="lastName" className="text-sm font-medium text-[var(--dc-text-subtle)]">Last Name</label>
-                      <input type="text" id="lastName" className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-md)] px-4 py-2 text-sm focus:outline-none focus:border-[var(--dc-accent)]" />
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="text-sm font-medium text-[var(--dc-text-muted)]">Email</label>
+                      <input 
+                        type="email" 
+                        id="email" 
+                        className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors"
+                        placeholder="john@example.com"
+                      />
                     </div>
                   </div>
                   
-                  <div className="space-y-1.5">
-                    <label htmlFor="email" className="text-sm font-medium text-[var(--dc-text-subtle)]">Email Address</label>
-                    <input type="email" id="email" className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-md)] px-4 py-2 text-sm focus:outline-none focus:border-[var(--dc-accent)]" />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label htmlFor="subject" className="text-sm font-medium text-[var(--dc-text-subtle)]">Subject</label>
-                    <select id="subject" className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-md)] px-4 py-2 text-sm focus:outline-none focus:border-[var(--dc-accent)] text-[var(--dc-text)]">
-                      <option>General Inquiry</option>
-                      <option>Custom PC Build</option>
-                      <option>Order Status</option>
-                      <option>Technical Support</option>
+                  <div className="space-y-2">
+                    <label htmlFor="subject" className="text-sm font-medium text-[var(--dc-text-muted)]">Subject</label>
+                    <select 
+                      id="subject"
+                      className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors appearance-none"
+                    >
+                      <option>Custom Build Inquiry</option>
+                      <option>Order Support</option>
+                      <option>Product Availability</option>
+                      <option>Warranty Claim</option>
+                      <option>Other</option>
                     </select>
                   </div>
-
-                  <div className="space-y-1.5">
-                    <label htmlFor="message" className="text-sm font-medium text-[var(--dc-text-subtle)]">Message</label>
-                    <textarea id="message" rows={5} className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-md)] px-4 py-2 text-sm focus:outline-none focus:border-[var(--dc-accent)] resize-none"></textarea>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="message" className="text-sm font-medium text-[var(--dc-text-muted)]">Message</label>
+                    <textarea 
+                      id="message" 
+                      rows={5}
+                      className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors resize-none"
+                      placeholder="How can we help you?"
+                    ></textarea>
                   </div>
-
-                  <button type="button" className="w-full bg-[var(--dc-accent)] text-[var(--dc-accent-text)] font-semibold rounded-[var(--dc-radius-md)] py-3 hover:bg-[var(--dc-accent-hover)] transition-colors">
+                  
+                  <Button type="submit" variant="primary" size="lg" className="w-full">
                     Send Message
-                  </button>
+                  </Button>
                 </form>
               </div>
             </div>
-          </Container>
-        </Section>
-      </main>
+
+          </div>
+        </RevealSection>
+        
+        <ClosingCTA />
+      </PageShell>
       <SiteFooter />
     </>
+  );
+}
+
+function ContactCard({ icon, title, value, href, primary }: { icon: React.ReactNode, title: string, value: string, href: string, primary?: boolean }) {
+  return (
+    <a 
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer" 
+      className={`flex items-center gap-6 p-6 rounded-[var(--dc-radius-xl)] border transition-all duration-[var(--dc-duration-normal)] group ${
+        primary 
+          ? "border-[var(--dc-accent)] bg-[var(--dc-accent)]/5 hover:bg-[var(--dc-accent)]/10" 
+          : "border-[var(--dc-border)] bg-[var(--dc-surface)] hover:border-[var(--dc-accent)]"
+      }`}
+    >
+      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition-colors ${
+        primary 
+          ? "bg-[var(--dc-accent)] text-[var(--dc-bg)] border-transparent" 
+          : "bg-[var(--dc-bg)] text-[var(--dc-text)] border-[var(--dc-border)] group-hover:border-[var(--dc-accent)] group-hover:text-[var(--dc-accent)]"
+      }`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-sm font-medium text-[var(--dc-text-subtle)] mb-1">{title}</p>
+        <p className="text-lg font-bold text-[var(--dc-text)]">{value}</p>
+      </div>
+    </a>
   );
 }
