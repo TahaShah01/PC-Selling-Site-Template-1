@@ -156,7 +156,7 @@ export function HorizontalShowcase() {
         <div ref={trackARef}>
           <motion.div
             className="flex gap-4 sm:gap-5 pl-[var(--dc-gutter)]"
-            style={reduced ? undefined : { x: xA }}
+            style={{ x: xA }}
             onMouseEnter={() => cursor.set("label", "Scroll")}
             onMouseLeave={cursor.reset}
           >
@@ -195,7 +195,7 @@ export function HorizontalShowcase() {
         <div ref={trackBRef}>
           <motion.div
             className="flex gap-4 sm:gap-5 pl-[var(--dc-gutter)]"
-            style={reduced ? undefined : { x: xB }}
+            style={{ x: xB }}
             onMouseEnter={() => cursor.set("label", "Scroll")}
             onMouseLeave={cursor.reset}
           >
@@ -262,7 +262,7 @@ function Panel({
   });
 
   return (
-    <motion.div style={reduced ? undefined : { y: drift }} className="shrink-0">
+    <motion.div style={{ y: drift }} className="shrink-0">
       <Link
         ref={panelRef}
         href={href}

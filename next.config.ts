@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Allow accessing Next.js dev server & HMR WebSocket from local network IPs
+  allowedDevOrigins: [
+    "localhost:3000",
+    "127.0.0.1:3000",
+    "192.168.100.40",
+    "192.168.100.40:3000",
+    "192.168.*",
+  ],
   images: {
     qualities: [75, 90, 95],
     remotePatterns: [
