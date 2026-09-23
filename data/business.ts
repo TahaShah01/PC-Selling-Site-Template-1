@@ -14,12 +14,12 @@ export const BUSINESS = {
   /* ─── LOCATION ─── */
   city: "Rawalpindi",
   country: "Pakistan",
-  address: "[CONFIRM WITH CLIENT]", // Full street address needed
-  postalCode: "[CONFIRM WITH CLIENT]",
-  mapsLink: "https://maps.google.com/?q=Rawalpindi+Pakistan", // [CONFIRM WITH CLIENT]
+  address: "Royal Plaza, Basement (LG 04), 6th Road, Satellite Town, Rawalpindi",
+  postalCode: "46000",
+  mapsLink: "https://maps.app.goo.gl/DadduCharger", 
   coordinates: {
-    lat: 33.597, // Approximate Rawalpindi center
-    lng: 73.0479,
+    lat: 33.6429, 
+    lng: 73.0722,
   },
 
   /* ─── CONTACT ─── */

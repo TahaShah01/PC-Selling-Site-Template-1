@@ -36,7 +36,10 @@ export default function HomePage() {
 
   return (
     <CursorProvider>
-      <Preloader onDone={() => setReady(true)} />
+      <Preloader
+        onRevealStart={() => setReady(true)}
+        onDone={() => setReady(true)}
+      />
 
       {/* Scroll progress hairline */}
       <motion.div

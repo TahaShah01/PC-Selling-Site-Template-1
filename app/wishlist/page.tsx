@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { Heart, ShoppingBag, Trash2 } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -103,11 +102,9 @@ export default function WishlistPage() {
               <p className="text-[var(--dc-text-muted)] mb-8 max-w-sm">
                 Save items you&apos;re interested in by clicking the heart icon on any product.
               </p>
-              <Link href="/shop" passHref legacyBehavior>
-                <Button size="lg" variant="primary" className="gap-2">
-                  <ShoppingBag size={18} /> Browse Shop
-                </Button>
-              </Link>
+              <Button href="/shop" size="lg" variant="primary" className="gap-2">
+                <ShoppingBag size={18} /> Browse Shop
+              </Button>
             </div>
           ) : (
             <div ref={gridRef} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

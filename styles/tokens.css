@@ -8,191 +8,206 @@
 .dark,
 [data-theme="dark"] {
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      BACKGROUNDS
   ───────────────────────────────────────────────────────── */
-  --dc-bg: #080808;
-  --dc-bg-elevated: #0E0E0E;
-  --dc-surface: #141414;
-  --dc-surface-2: #1C1C1C;
-  --dc-surface-3: #242424;
-  --dc-card: #111111;
-  --dc-card-hover: #161616;
-  --dc-overlay: rgba(8, 8, 8, 0.85);
-  --dc-scrim: rgba(8, 8, 8, 0.95);
+   --dc-bg: #080808;
+   --dc-bg-elevated: #0E0E0E;
+   --dc-surface: #141414;
+   --dc-surface-2: #1C1C1C;
+   --dc-surface-3: #242424;
+   --dc-card: #111111;
+   --dc-card-hover: #161616;
+   --dc-overlay: rgba(8, 8, 8, 0.85);
+   --dc-scrim: rgba(8, 8, 8, 0.95);
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      TEXT
   ───────────────────────────────────────────────────────── */
-  --dc-text: #F2F2ED;
-  --dc-text-muted: #A0A09B;
-  --dc-text-subtle: #6B6B66;
-  --dc-text-inverse: #080808;
+   --dc-text: #F2F2ED;
+   --dc-text-muted: #A0A09B;
+   --dc-text-subtle: #6B6B66;
+   --dc-text-inverse: #080808;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      BORDERS
   ───────────────────────────────────────────────────────── */
-  --dc-border: rgba(255, 255, 255, 0.08);
-  --dc-border-strong: rgba(255, 255, 255, 0.16);
-  --dc-border-accent: rgba(255, 106, 26, 0.35);
+   --dc-border: rgba(255, 255, 255, 0.08);
+   --dc-border-strong: rgba(255, 255, 255, 0.16);
+   --dc-border-accent: rgba(255, 106, 26, 0.35);
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      PRIMARY ACCENT — DADDUCHARGER BRAND ORANGE
   ───────────────────────────────────────────────────────── */
-  --dc-accent: #FF6A1A;
-  --dc-accent-hover: #FF8542;
-  --dc-accent-active: #E5550A;
-  --dc-accent-dim: rgba(255, 106, 26, 0.15);
-  --dc-accent-glow: rgba(255, 106, 26, 0.25);
-  --dc-accent-text: #FFFFFF;
+   --dc-accent: #FF6A1A;
+   --dc-accent-hover: #FF8542;
+   --dc-accent-active: #E5550A;
+   --dc-accent-dim: rgba(255, 106, 26, 0.15);
+   --dc-accent-glow: rgba(255, 106, 26, 0.25);
+   --dc-accent-text: #FFFFFF;
 
-  /* Explicit Orange Token Palette */
-  --dc-orange: #FF6A1A;
-  --dc-orange-hover: #FF8542;
-  --dc-orange-active: #E5550A;
-  --dc-orange-dim: rgba(255, 106, 26, 0.15);
-  --dc-orange-border: rgba(255, 106, 26, 0.35);
-  --dc-orange-glow: 0 0 24px rgba(255, 106, 26, 0.28);
-  --dc-orange-glow-strong: 0 0 48px rgba(255, 106, 26, 0.48);
-  --dc-orange-subtle: rgba(255, 106, 26, 0.06);
+   /* Explicit Orange Token Palette */
+   --dc-orange: #FF6A1A;
+   --dc-orange-hover: #FF8542;
+   --dc-orange-active: #E5550A;
+   --dc-orange-dim: rgba(255, 106, 26, 0.15);
+   --dc-orange-border: rgba(255, 106, 26, 0.35);
+   --dc-orange-glow: 0 0 24px rgba(255, 106, 26, 0.28);
+   --dc-orange-glow-strong: 0 0 48px rgba(255, 106, 26, 0.48);
+   --dc-orange-subtle: rgba(255, 106, 26, 0.06);
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      SECONDARY ACCENT — ELECTRIC AMBER
   ───────────────────────────────────────────────────────── */
-  --dc-accent-2: #F59E0B;
-  --dc-accent-2-hover: #FBBF24;
-  --dc-accent-2-dim: rgba(245, 158, 11, 0.15);
+   --dc-accent-2: #F59E0B;
+   --dc-accent-2-hover: #FBBF24;
+   --dc-accent-2-dim: rgba(245, 158, 11, 0.15);
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      STATUS COLORS
   ───────────────────────────────────────────────────────── */
-  --dc-success: #22C55E;
-  --dc-warning: #F59E0B;
-  --dc-error: #EF4444;
-  --dc-info: #3B82F6;
+   --dc-success: #22C55E;
+   --dc-warning: #F59E0B;
+   --dc-error: #EF4444;
+   --dc-info: #3B82F6;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      TYPOGRAPHY — FAMILIES
   ───────────────────────────────────────────────────────── */
-  --dc-font-display: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
-  --dc-font-body: var(--font-inter), 'Inter', system-ui, sans-serif;
-  --dc-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+   --dc-font-display: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
+   --dc-font-body: var(--font-inter), 'Inter', system-ui, sans-serif;
+   --dc-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      TYPOGRAPHY — SCALE (FLUID)
   ───────────────────────────────────────────────────────── */
-  --dc-text-display-2xl: clamp(4rem, 10vw, 9rem);
-  --dc-text-display-xl: clamp(3rem, 7vw, 6.5rem);
-  --dc-text-display-lg: clamp(2.25rem, 5vw, 4.5rem);
-  --dc-text-display-md: clamp(1.75rem, 3.5vw, 3rem);
-  --dc-text-xl: 1.25rem;
-  --dc-text-lg: 1.125rem;
-  --dc-text-base: 1rem;
-  --dc-text-sm: 0.875rem;
-  --dc-text-xs: 0.75rem;
-  --dc-text-2xs: 0.6875rem;
+   --dc-text-display-2xl: clamp(4rem, 10vw, 9rem);
+   --dc-text-display-xl: clamp(3rem, 7vw, 6.5rem);
+   --dc-text-display-lg: clamp(2.25rem, 5vw, 4.5rem);
+   --dc-text-display-md: clamp(1.75rem, 3.5vw, 3rem);
+   --dc-text-xl: 1.25rem;
+   --dc-text-lg: 1.125rem;
+   --dc-text-base: 1rem;
+   --dc-text-sm: 0.875rem;
+   --dc-text-xs: 0.75rem;
+   --dc-text-2xs: 0.6875rem;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      TYPOGRAPHY — WEIGHTS
   ───────────────────────────────────────────────────────── */
-  --dc-weight-regular: 400;
-  --dc-weight-medium: 500;
-  --dc-weight-semibold: 600;
-  --dc-weight-bold: 700;
-  --dc-weight-extrabold: 800;
+   --dc-weight-regular: 400;
+   --dc-weight-medium: 500;
+   --dc-weight-semibold: 600;
+   --dc-weight-bold: 700;
+   --dc-weight-extrabold: 800;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      TYPOGRAPHY — LINE HEIGHTS
   ───────────────────────────────────────────────────────── */
-  --dc-leading-tight: 1.1;
-  --dc-leading-snug: 1.25;
-  --dc-leading-normal: 1.5;
-  --dc-leading-relaxed: 1.75;
+   --dc-leading-tight: 1.1;
+   --dc-leading-snug: 1.25;
+   --dc-leading-normal: 1.5;
+   --dc-leading-relaxed: 1.75;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      TYPOGRAPHY — LETTER SPACING
   ───────────────────────────────────────────────────────── */
-  --dc-tracking-tighter: -0.04em;
-  --dc-tracking-tight: -0.02em;
-  --dc-tracking-normal: 0em;
-  --dc-tracking-wide: 0.05em;
-  --dc-tracking-wider: 0.1em;
+   --dc-tracking-tighter: -0.04em;
+   --dc-tracking-tight: -0.02em;
+   --dc-tracking-normal: 0em;
+   --dc-tracking-wide: 0.05em;
+   --dc-tracking-wider: 0.1em;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
+   BRAND / HEADER WORDMARK
+───────────────────────────────────────────────────────── */
+
+   --dc-text-brand: clamp(1.25rem, 1.35vw, 1.55rem);
+   --dc-tracking-brand: 0.14em;
+
+   --dc-brand-text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.08),
+      0 2px 8px rgba(0, 0, 0, 0.55);
+
+   --dc-brand-accent-shadow:
+      0 0 8px rgba(255, 106, 26, 0.20),
+      0 0 18px rgba(255, 106, 26, 0.10);
+
+   /* ─────────────────────────────────────────────────────────
      SPACING
   ───────────────────────────────────────────────────────── */
-  --dc-space-section: clamp(3.5rem, 10vw, 7.5rem);
-  --dc-space-block: 2.5rem;
-  --dc-space-card: 1.5rem;
-  --dc-space-tight: 1rem;
-  --dc-space-micro: 0.5rem;
+   --dc-space-section: clamp(3.5rem, 10vw, 7.5rem);
+   --dc-space-block: 2.5rem;
+   --dc-space-card: 1.5rem;
+   --dc-space-tight: 1rem;
+   --dc-space-micro: 0.5rem;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      LAYOUT — FLUID SCALING (720p to 4K)
   ───────────────────────────────────────────────────────── */
-  --dc-container: min(88vw, 2560px);
-  --dc-container-wide: min(94vw, 3840px);
-  --dc-container-narrow: min(85vw, 1024px);
-  --dc-gutter: clamp(1.25rem, 4vw, 6rem);
+   --dc-container: min(88vw, 2560px);
+   --dc-container-wide: min(94vw, 3840px);
+   --dc-container-narrow: min(85vw, 1024px);
+   --dc-gutter: clamp(1.25rem, 4vw, 6rem);
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      BORDER RADIUS
   ───────────────────────────────────────────────────────── */
-  --dc-radius-sm: 4px;
-  --dc-radius-md: 8px;
-  --dc-radius-lg: 12px;
-  --dc-radius-xl: 16px;
-  --dc-radius-2xl: 24px;
-  --dc-radius-full: 9999px;
+   --dc-radius-sm: 4px;
+   --dc-radius-md: 8px;
+   --dc-radius-lg: 12px;
+   --dc-radius-xl: 16px;
+   --dc-radius-2xl: 24px;
+   --dc-radius-full: 9999px;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      SHADOWS
   ───────────────────────────────────────────────────────── */
-  --dc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
-  --dc-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
-  --dc-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
-  --dc-shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.8);
-  --dc-shadow-accent: 0 0 24px rgba(255, 106, 26, 0.28);
-  --dc-shadow-accent-strong: 0 0 48px rgba(255, 106, 26, 0.48);
+   --dc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+   --dc-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
+   --dc-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
+   --dc-shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.8);
+   --dc-shadow-accent: 0 0 24px rgba(255, 106, 26, 0.28);
+   --dc-shadow-accent-strong: 0 0 48px rgba(255, 106, 26, 0.48);
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      Z-INDEX
   ───────────────────────────────────────────────────────── */
-  --dc-z-base: 0;
-  --dc-z-raised: 10;
-  --dc-z-dropdown: 100;
-  --dc-z-sticky: 200;
-  --dc-z-overlay: 300;
-  --dc-z-modal: 400;
-  --dc-z-toast: 500;
-  --dc-z-cursor: 600;
+   --dc-z-base: 0;
+   --dc-z-raised: 10;
+   --dc-z-dropdown: 100;
+   --dc-z-sticky: 200;
+   --dc-z-overlay: 300;
+   --dc-z-modal: 400;
+   --dc-z-toast: 500;
+   --dc-z-cursor: 600;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      MOTION — EASING
   ───────────────────────────────────────────────────────── */
-  --dc-ease-linear: linear;
-  --dc-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --dc-ease-in: cubic-bezier(0.64, 0, 0.78, 0);
-  --dc-ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
-  --dc-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+   --dc-ease-linear: linear;
+   --dc-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+   --dc-ease-in: cubic-bezier(0.64, 0, 0.78, 0);
+   --dc-ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+   --dc-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      MOTION — DURATIONS
   ───────────────────────────────────────────────────────── */
-  --dc-duration-instant: 80ms;
-  --dc-duration-fast: 180ms;
-  --dc-duration-normal: 320ms;
-  --dc-duration-slow: 500ms;
-  --dc-duration-slower: 700ms;
-  --dc-duration-cinematic: 1000ms;
+   --dc-duration-instant: 80ms;
+   --dc-duration-fast: 180ms;
+   --dc-duration-normal: 320ms;
+   --dc-duration-slow: 500ms;
+   --dc-duration-slower: 700ms;
+   --dc-duration-cinematic: 1000ms;
 
-  /* ─────────────────────────────────────────────────────────
+   /* ─────────────────────────────────────────────────────────
      HEADER & MENU SURFACES
   ───────────────────────────────────────────────────────── */
-  --dc-header-height: 72px;
-  --dc-header-height-mobile: 60px;
-  --dc-header-bg: rgba(8, 8, 8, 0.72);
-  --dc-menu-bg: rgba(10, 10, 10, 0.95);
+   --dc-header-height: 72px;
+   --dc-header-height-mobile: 60px;
+   --dc-header-bg: rgba(8, 8, 8, 0.72);
+   --dc-menu-bg: rgba(10, 10, 10, 0.95);
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -202,64 +217,64 @@
 ───────────────────────────────────────────────────────── */
 .light,
 [data-theme="light"] {
-  /* BACKGROUNDS */
-  --dc-bg: #F6F8FA;
-  --dc-bg-elevated: #FFFFFF;
-  --dc-surface: #FFFFFF;
-  --dc-surface-2: #EEF1F4;
-  --dc-surface-3: #E1E5E9;
-  --dc-card: #FFFFFF;
-  --dc-card-hover: #F8FAFC;
-  --dc-overlay: rgba(246, 248, 250, 0.88);
-  --dc-scrim: rgba(255, 255, 255, 0.95);
-  --dc-header-bg: rgba(246, 248, 250, 0.85);
-  --dc-menu-bg: rgba(255, 255, 255, 0.98);
+   /* BACKGROUNDS */
+   --dc-bg: #F6F8FA;
+   --dc-bg-elevated: #FFFFFF;
+   --dc-surface: #FFFFFF;
+   --dc-surface-2: #EEF1F4;
+   --dc-surface-3: #E1E5E9;
+   --dc-card: #ffffffe5;
+   --dc-card-hover: #F8FAFC;
+   --dc-overlay: rgba(246, 248, 250, 0.88);
+   --dc-scrim: rgba(255, 255, 255, 0.95);
+   --dc-header-bg: rgba(246, 248, 250, 0.85);
+   --dc-menu-bg: rgba(255, 255, 255, 0.98);
 
-  /* TEXT */
-  --dc-text: #0E1117;
-  --dc-text-muted: #4F5666;
-  --dc-text-subtle: #848B98;
-  --dc-text-inverse: #FFFFFF;
+   /* TEXT */
+   --dc-text: #0E1117;
+   --dc-text-muted: #4F5666;
+   --dc-text-subtle: #848B98;
+   --dc-text-inverse: #FFFFFF;
 
-  /* BORDERS */
-  --dc-border: rgba(14, 17, 23, 0.08);
-  --dc-border-strong: rgba(14, 17, 23, 0.16);
-  --dc-border-accent: rgba(234, 88, 12, 0.4);
+   /* BORDERS */
+   --dc-border: rgba(14, 17, 23, 0.08);
+   --dc-border-strong: rgba(14, 17, 23, 0.16);
+   --dc-border-accent: rgba(234, 88, 12, 0.4);
 
-  /* PRIMARY ACCENT — CALIBRATED DADDUCHARGER ORANGE */
-  --dc-accent: #EA580C;
-  --dc-accent-hover: #C2410C;
-  --dc-accent-active: #9A3412;
-  --dc-accent-dim: rgba(234, 88, 12, 0.12);
-  --dc-accent-glow: rgba(234, 88, 12, 0.22);
-  --dc-accent-text: #FFFFFF;
+   /* PRIMARY ACCENT — CALIBRATED DADDUCHARGER ORANGE */
+   --dc-accent: #EA580C;
+   --dc-accent-hover: #C2410C;
+   --dc-accent-active: #9A3412;
+   --dc-accent-dim: rgba(234, 88, 12, 0.12);
+   --dc-accent-glow: rgba(234, 88, 12, 0.22);
+   --dc-accent-text: #FFFFFF;
 
-  /* Explicit Orange Token Palette */
-  --dc-orange: #EA580C;
-  --dc-orange-hover: #C2410C;
-  --dc-orange-active: #9A3412;
-  --dc-orange-dim: rgba(234, 88, 12, 0.12);
-  --dc-orange-border: rgba(234, 88, 12, 0.35);
-  --dc-orange-glow: 0 4px 20px rgba(234, 88, 12, 0.25);
-  --dc-orange-glow-strong: 0 8px 36px rgba(234, 88, 12, 0.4);
-  --dc-orange-subtle: rgba(234, 88, 12, 0.05);
+   /* Explicit Orange Token Palette */
+   --dc-orange: #EA580C;
+   --dc-orange-hover: #C2410C;
+   --dc-orange-active: #9A3412;
+   --dc-orange-dim: rgba(234, 88, 12, 0.12);
+   --dc-orange-border: rgba(234, 88, 12, 0.35);
+   --dc-orange-glow: 0 4px 20px rgba(234, 88, 12, 0.25);
+   --dc-orange-glow-strong: 0 8px 36px rgba(234, 88, 12, 0.4);
+   --dc-orange-subtle: rgba(234, 88, 12, 0.05);
 
-  /* SECONDARY ACCENT — AMBER */
-  --dc-accent-2: #D97706;
-  --dc-accent-2-hover: #B45309;
-  --dc-accent-2-dim: rgba(217, 119, 6, 0.12);
+   /* SECONDARY ACCENT — AMBER */
+   --dc-accent-2: #D97706;
+   --dc-accent-2-hover: #B45309;
+   --dc-accent-2-dim: rgba(217, 119, 6, 0.12);
 
-  /* STATUS COLORS */
-  --dc-success: #16A34A;
-  --dc-warning: #D97706;
-  --dc-error: #DC2626;
-  --dc-info: #2563EB;
+   /* STATUS COLORS */
+   --dc-success: #16A34A;
+   --dc-warning: #D97706;
+   --dc-error: #DC2626;
+   --dc-info: #2563EB;
 
-  /* SHADOWS */
-  --dc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --dc-shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
-  --dc-shadow-lg: 0 12px 32px -4px rgba(0, 0, 0, 0.09), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
-  --dc-shadow-xl: 0 24px 64px -8px rgba(0, 0, 0, 0.12);
-  --dc-shadow-accent: 0 4px 20px rgba(234, 88, 12, 0.28);
-  --dc-shadow-accent-strong: 0 8px 36px rgba(234, 88, 12, 0.42);
+   /* SHADOWS */
+   --dc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+   --dc-shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+   --dc-shadow-lg: 0 12px 32px -4px rgba(0, 0, 0, 0.09), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+   --dc-shadow-xl: 0 24px 64px -8px rgba(0, 0, 0, 0.12);
+   --dc-shadow-accent: 0 4px 20px rgba(234, 88, 12, 0.28);
+   --dc-shadow-accent-strong: 0 8px 36px rgba(234, 88, 12, 0.42);
 }

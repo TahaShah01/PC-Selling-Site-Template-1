@@ -92,7 +92,28 @@ const TRACK_B_ITEMS: TrackBItem[] = [
 
 export function HorizontalShowcase() {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  return isDesktop ? <DesktopShowcase /> : <MobileShowcase />;
+
+  return (
+    <>
+      {/*
+        LIGHT MODE IMAGE FIX
+
+        The cards deliberately use reduced image opacity in dark mode.
+        In light mode that transparency exposes --dc-card (#fff), which
+        looks exactly like a white film sitting on top of every image.
+        Force only the image itself to full opacity in light mode while
+        leaving the existing black readability gradients untouched.
+      */}
+      <style jsx global>{`
+        .light .dc-showcase-image,
+        [data-theme="light"] .dc-showcase-image {
+          opacity: 1 !important;
+        }
+      `}</style>
+
+      {isDesktop ? <DesktopShowcase /> : <MobileShowcase />}
+    </>
+  );
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -165,7 +186,7 @@ function MobileRow({
                 alt=""
                 fill
                 sizes="80vw"
-                className="object-cover opacity-70"
+                className="dc-showcase-image object-cover opacity-70"
                 priority={priority && i === 0}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/55 to-transparent" />
@@ -373,7 +394,7 @@ function Panel({
               alt={label}
               fill
               sizes="(max-width: 768px) 72vw, 28vw"
-              className="object-cover object-center opacity-70 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-108 group-hover:opacity-90"
+              className="dc-showcase-image object-cover object-center opacity-70 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-108 group-hover:opacity-90"
               priority={index < 2}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/60 to-transparent opacity-90 transition-opacity duration-500 group-hover:opacity-75" />
@@ -432,7 +453,7 @@ function SmallPanel({ item, index }: { item: TrackBItem; index: number }) {
           alt={item.label}
           fill
           sizes="(max-width: 768px) 50vw, 19vw"
-          className="object-cover object-center opacity-65 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 group-hover:opacity-90"
+          className="dc-showcase-image object-cover object-center opacity-65 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 group-hover:opacity-90"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/60 to-transparent opacity-90 transition-opacity duration-500 group-hover:opacity-75" />
         <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#080808] to-transparent" />

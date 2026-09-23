@@ -6,7 +6,7 @@ import { Shield, Wrench, Zap, MonitorPlay } from "lucide-react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { PageHero, PageShell, RevealSection } from "@/components/sections/PageHero";
-import { ScrollWordFill, Parallax } from "@/components/motion/Reveal";
+import { ScrollWordFill } from "@/components/motion/Reveal";
 import { ClosingCTA } from "@/components/sections/ClosingCTA";
 
 export default function AboutPage() {
@@ -42,19 +42,32 @@ export default function AboutPage() {
           </div>
         </RevealSection>
 
-        {/* Workshop Image with Parallax */}
+        {/* Workshop Map Location */}
         <RevealSection className="py-24 overflow-hidden">
           <div className="dc-container">
-            <Parallax distance={50} className="relative aspect-[21/9] w-full rounded-[var(--dc-radius-2xl)] overflow-hidden bg-[var(--dc-surface-2)]">
-              {/* Fallback pattern if we don't have a real workshop photo */}
-              <div className="absolute inset-0 bg-[url('/grid-bg.svg')] bg-center opacity-10" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[var(--dc-text-muted)] tracking-widest uppercase text-sm font-bold flex items-center gap-2">
-                  <Wrench size={16} /> 
-                  Daddu Charger Workshop · Rawalpindi
-                </span>
-              </div>
-            </Parallax>
+            <div className="text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">Our Base of Operations</h2>
+              <p className="text-[var(--dc-text-muted)] flex flex-col md:flex-row items-center justify-center gap-2">
+                <Wrench size={16} className="text-[var(--dc-accent)]" />
+                Royal Plaza, Basement (LG 04), 6th Road, Satellite Town, Rawalpindi
+              </p>
+            </div>
+            
+            <div className="relative aspect-[16/9] md:aspect-[21/9] w-full rounded-[var(--dc-radius-2xl)] overflow-hidden border border-[var(--dc-border)] bg-[var(--dc-surface-2)] shadow-2xl group">
+              {/* Overlay to prevent accidental scrolling on the map until hovered/clicked, and to add a subtle gradient */}
+              <div className="absolute inset-0 z-10 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.5)]" />
+              
+              <iframe
+                src="https://maps.google.com/maps?q=Daddu+Charger+Gaming+Store,+Royal+Plaza,+6th+Road,+Rawalpindi,+Pakistan&t=m&z=16&output=embed&iwloc=near"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0 grayscale transition-all duration-700 ease-in-out group-hover:grayscale-0 dark:invert dark:hue-rotate-180 opacity-80 group-hover:opacity-100"
+              />
+            </div>
           </div>
         </RevealSection>
 

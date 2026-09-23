@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Search, Heart, ShoppingBag, ArrowLeft, X } from "lucide-react";
 import {
@@ -160,10 +161,11 @@ export function SiteHeader() {
       >
         <div className="flex h-14 lg:h-[var(--dc-header-height)] items-center justify-between gap-3 lg:gap-6 px-4 lg:px-[var(--dc-gutter)] w-full">
           {/* ── LOGO ── */}
+          {/* ── BRAND / LOGO ── */}
           <Link
             href="/"
             aria-label="Daddu Charger — home"
-            className="flex shrink-0 items-center gap-2.5"
+            className="group flex shrink-0 items-center"
             onMouseEnter={() => {
               cancelClose();
               setMenu(null);
@@ -171,24 +173,126 @@ export function SiteHeader() {
             }}
             onMouseLeave={cursor.reset}
           >
-            <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--dc-radius-md)] bg-[var(--dc-accent)]">
-              <motion.svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-                whileHover={reduced ? undefined : { rotate: -12, scale: 1.15 }}
-                transition={{ duration: 0.5, ease: EASE.spring }}
-              >
-                <path d="M9 1L3 9H8L7 15L13 7H8L9 1Z" fill="var(--dc-accent-text)" strokeLinejoin="round" />
-              </motion.svg>
-            </span>
-            <span className="font-display text-lg font-bold leading-none tracking-[-0.03em] text-[var(--dc-text)]">
-              daddu<span className="text-[var(--dc-accent)]">charger</span>
-            </span>
-          </Link>
+            {/* Logo */}
+            <div className="relative flex shrink-0 items-center justify-center">
+              <Image
+                src="/logo.png"
+                alt="Daddu Charger"
+                width={400}
+                height={400}
+                priority
+                className="
+        h-auto
+        w-12
+        object-contain
+        transition-transform
+        duration-500
+        ease-[var(--dc-ease-out)]
+        group-hover:scale-[1.04]
 
+        lg:w-[68px]
+        xl:w-[72px]
+      "
+              />
+            </div>
+
+            {/* Desktop / Tablet Brand Wordmark */}
+            <div
+              className="
+      ml-3
+      hidden
+      sm:flex
+      items-center
+      whitespace-nowrap
+      select-none
+
+      lg:ml-4
+    "
+            >
+              <div className="relative flex items-center">
+                {/* GAMING */}
+                <span
+                  className="
+          relative
+          font-display
+          text-[1.4rem]
+          font-black
+          uppercase
+          leading-none
+          tracking-[0.035em]
+          text-[var(--dc-text)]
+
+          lg:text-[1.65rem]
+          xl:text-[1.8rem]
+        "
+                  style={{
+                    textShadow:
+                      "0 2px 8px rgba(0,0,0,.6), 0 0 1px rgba(255,255,255,.45)",
+                  }}
+                >
+                  GAMING
+                </span>
+
+                {/* Divider */}
+                <span
+                  aria-hidden="true"
+                  className="
+          mx-2.5
+          h-6
+          w-[2px]
+          -skew-x-[18deg]
+          bg-[var(--dc-accent)]
+          shadow-[0_0_12px_var(--dc-accent-glow)]
+          lg:h-7
+        "
+                />
+
+                {/* STORE */}
+                <span
+                  className="
+          relative
+          font-display
+          text-[1.4rem]
+          font-black
+          uppercase
+          italic
+          leading-none
+          tracking-[0.055em]
+          text-[var(--dc-accent)]
+
+          lg:text-[1.65rem]
+          xl:text-[1.8rem]
+        "
+                  style={{
+                    textShadow:
+                      "0 0 12px rgba(255,106,26,.22), 0 2px 8px rgba(0,0,0,.55)",
+                  }}
+                >
+                  STORE
+
+                  {/* Orange underline */}
+                  <span
+                    aria-hidden="true"
+                    className="
+            absolute
+            -bottom-1.5
+            left-0
+            h-[2px]
+            w-full
+            origin-left
+            scale-x-[0.72]
+            bg-gradient-to-r
+            from-[var(--dc-accent)]
+            to-transparent
+            transition-transform
+            duration-500
+            group-hover:scale-x-100
+          "
+                  />
+                </span>
+              </div>
+            </div>
+          </Link>
           {/* ── NAV ── */}
           <nav aria-label="Primary" className="hidden lg:block">
             <ul className="flex items-center gap-1">
@@ -437,12 +541,18 @@ export function SiteHeader() {
                   className="flex items-center gap-2 min-h-[44px]"
                   aria-label="Daddu Charger Home"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-[var(--dc-radius-md)] bg-[var(--dc-accent)] text-black font-black text-xs">
-                    ⚡
+                  <Image
+                    src="/logo.png"
+                    alt="Daddu Charger"
+                    width={400}
+                    height={400}
+                    className="w-12 h-auto object-contain"
+                    priority
+                  />
+                  <span className="font-display font-black text-2xl tracking-[0.2em] uppercase mt-1 ml-2 block cursor-default select-none transition-all duration-300 hover:scale-105 hover:drop-shadow-[0_0_15px_var(--dc-accent)]">
+                    <span className="text-white">GAMING</span> <span className="text-[var(--dc-accent)]">STORE</span>
                   </span>
-                  <span className="font-display font-bold tracking-tight text-lg text-[var(--dc-text)]">
-                    DADDU
-                  </span>
+
                 </Link>
               )}
 

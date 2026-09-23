@@ -171,7 +171,7 @@ export function Hero({ ready = true }: { ready?: boolean }) {
           }}
         />
 
-        {/* ── Rig layer: GSAP owns entrance clip/scale + scroll drift ── */}
+        {/* ── Rig layer: full image + controlled theme-aware scrims ── */}
         <div
           ref={rigRef}
           aria-hidden="true"
@@ -190,7 +190,17 @@ export function Hero({ ready = true }: { ready?: boolean }) {
                 }
             }
           >
-            <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_80%_50%,black_30%,transparent_75%)] [-webkit-mask-image:radial-gradient(ellipse_at_80%_50%,black_30%,transparent_75%)]">
+            {/*
+              IMPORTANT:
+              The image is no longer alpha-masked. The old radial mask made
+              the light page background show through the photo, which looked
+              like a white film and created a hard/unnatural transition.
+
+              We keep the original image opacity for the cinematic look, but
+              place a permanent dark substrate behind it. That means reduced
+              opacity blends into black instead of white in light mode.
+            */}
+            <div className="absolute inset-0 overflow-hidden bg-[#080808]">
               <Image
                 src="/hero-pc.jpg"
                 alt="Daddu Charger Custom Gaming PC"
@@ -201,6 +211,60 @@ export function Hero({ ready = true }: { ready?: boolean }) {
                 className="object-cover object-center lg:object-[center_right] opacity-40 sm:opacity-55 lg:opacity-85 xl:opacity-95"
               />
             </div>
+
+            {/*
+              Directional scrims, not a mask:
+              1) left scrim protects the headline ("Engineered") from the PC;
+              2) top scrim protects the transparent navbar in light mode.
+
+              Because both use --dc-bg, they automatically become light in
+              light mode and dark in dark mode without JS/theme detection.
+            */}
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background: `
+                  linear-gradient(
+                    90deg,
+                    var(--dc-bg) 0%,
+                    color-mix(in srgb, var(--dc-bg) 96%, transparent) 5%,
+                    color-mix(in srgb, var(--dc-bg) 82%, transparent) 12%,
+                    color-mix(in srgb, var(--dc-bg) 48%, transparent) 22%,
+                    color-mix(in srgb, var(--dc-bg) 18%, transparent) 31%,
+                    transparent 40%
+                  ),
+                  linear-gradient(
+                    180deg,
+                    var(--dc-bg) 0%,
+                    color-mix(in srgb, var(--dc-bg) 98%, transparent) 5%,
+                    color-mix(in srgb, var(--dc-bg) 88%, transparent) 9%,
+                    color-mix(in srgb, var(--dc-bg) 52%, transparent) 15%,
+                    color-mix(in srgb, var(--dc-bg) 16%, transparent) 21%,
+                    transparent 27%
+                  )
+                `,
+              }}
+            />
+
+            {/*
+              Mobile/tablet readability veil. It is intentionally subtle and
+              only protects the lower text area; the PC itself remains vivid.
+            */}
+            <div
+              className="pointer-events-none absolute inset-0 lg:hidden"
+              style={{
+                background: `
+                  linear-gradient(
+                    180deg,
+                    transparent 0%,
+                    transparent 48%,
+                    color-mix(in srgb, var(--dc-bg) 38%, transparent) 68%,
+                    color-mix(in srgb, var(--dc-bg) 80%, transparent) 86%,
+                    var(--dc-bg) 100%
+                  )
+                `,
+              }}
+            />
           </motion.div>
         </div>
 
@@ -297,6 +361,7 @@ export function Hero({ ready = true }: { ready?: boolean }) {
           </motion.div>
         </button>
       </div>
+
     </section>
   );
 }

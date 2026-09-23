@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   motion,
   useScroll,
@@ -202,18 +203,13 @@ export function SiteFooter() {
             onMouseEnter={() => cursor.set("hover")}
             onMouseLeave={cursor.reset}
           >
-            <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-[var(--dc-radius-md)] bg-[var(--dc-accent)]">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path
-                  d="M9 1L3 9H8L7 15L13 7H8L9 1Z"
-                  fill="var(--dc-accent-text)"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-            <span className="font-display text-lg font-bold leading-none tracking-[-0.03em] text-[var(--dc-text)]">
-              daddu<span className="text-[var(--dc-accent)]">charger</span>
-            </span>
+            <Image
+              src="/logo.png"
+              alt="Daddu Charger"
+              width={400}
+              height={400}
+              className="w-[120px] h-auto object-contain"
+            />
           </Link>
 
           <p className="mb-6 max-w-[28ch] text-sm leading-relaxed text-[var(--dc-text-muted)]">
@@ -365,17 +361,14 @@ export function SiteFooter() {
       <div className="relative border-t border-[var(--dc-border)]">
         <div className="dc-gutter flex flex-wrap items-center justify-between gap-4 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
           <div className="flex items-center gap-3">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[5px] bg-[var(--dc-accent)] shadow-[0_0_20px_rgba(255,106,26,0.25)]">
-              <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M9 1L3 9H8L7 15L13 7H8L9 1Z" fill="var(--dc-accent-text)" strokeLinejoin="round" />
-              </svg>
-            </span>
-
+            <Image
+              src="/logo.png"
+              alt="Daddu Charger"
+              width={400}
+              height={400}
+              className="w-[80px] h-auto object-contain"
+            />
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-display text-sm font-bold tracking-[-0.03em] text-[var(--dc-text)]">
-                daddu<span className="text-[var(--dc-accent)]">charger</span>
-              </span>
-              <span className="h-1 w-1 rounded-full bg-[var(--dc-border)]" aria-hidden="true" />
               <span suppressHydrationWarning className="text-xs text-[var(--dc-text-subtle)]">
                 © {new Date().getFullYear()} {BUSINESS.legalName}
               </span>

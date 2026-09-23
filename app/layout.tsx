@@ -1,23 +1,37 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import Script from "next/script";
+import { Space_Grotesk, Inter, Russo_One } from "next/font/google";
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { ThemeProvider, themeInitScript } from "@/components/providers/ThemeProvider";
 
 /* ─────────────────────────────────────────────────────────
    FONTS
+
+   Russo One is new: a single-weight (400, it has no other
+   cuts) bold geometric display face — the font Google's own
+   metadata tags "Esports/Gaming" — added specifically for the
+   "GAMING STORE" wordmark beside the logo. Space Grotesk and
+   Inter are untouched; this doesn't replace either, it's a
+   third variable used in exactly one place (see .dc-wordmark
+   in globals.css).
 ───────────────────────────────────────────────────────── */
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const russoOne = Russo_One({
+  variable: "--font-esports",
+  subsets: ["latin"],
+  weight: "400",
   display: "swap",
 });
 
@@ -76,15 +90,6 @@ export const metadata: Metadata = {
   },
 };
 
-/* MOBILE FIX — viewportFit: "cover" lets the page draw edge-to-edge
-   behind the notch/home-indicator on notched phones, instead of
-   the browser auto-inserting a plain background band there. This
-   only matters if a fixed element (header, mobile menu) pads for
-   `env(safe-area-inset-*)`; without that padding, viewportFit alone
-   just risks content sitting under the notch. Flagging: if
-   SiteHeader / the mobile menu don't already add that padding,
-   send me those files and I'll add it — I don't have their current
-   content in this batch. */
 export const viewport: Viewport = {
   themeColor: "#080808",
   width: "device-width",
@@ -104,11 +109,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${inter.variable}`}
+      className={`${spaceGrotesk.variable} ${inter.variable} ${russoOne.variable}`}
     >
       <head>
-        <script
+        <Script
           id="theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: themeInitScript }}
         />
       </head>
