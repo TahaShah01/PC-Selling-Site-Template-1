@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, Check, RefreshCcw, Cpu, Gpu, Server, Database, Box, Fan, Zap } from "lucide-react";
+import { Plus, Check, RefreshCcw, Trash2, Cpu, Gpu, Server, Database, Box, Fan, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -12,6 +12,8 @@ import { Button } from "@/components/primitives/Button";
 import { formatPrice } from "@/lib/utils";
 import { MOCK_PRODUCTS } from "@/data/products";
 import { COMPATIBILITY_ENGINE } from "@/lib/compatibility/engine";
+import { useCartStore } from "@/lib/store/cart";
+import { useScrollLock } from "@/components/providers/SmoothScrollProvider";
 
 type BuilderCategory = {
   id: string;
@@ -36,6 +38,7 @@ export default function BuildPCPage() {
   const [selectedParts, setSelectedParts] = React.useState<Record<string, any>>({});
   const [activeCategory, setActiveCategory] = React.useState<string | null>(null);
   const [warnings, setWarnings] = React.useState<string[]>([]);
+  const { addToCart, setIsOpen: setCartOpen } = useCartStore();
   
   // Real-time animated total
   const rawTotal = Object.values(selectedParts).reduce((sum, p) => sum + (p.priceSale ?? p.priceRegular), 0);
@@ -75,6 +78,15 @@ export default function BuildPCPage() {
       delete next[categoryId];
       return next;
     });
+  };
+
+  const handleProceedToCheckout = () => {
+    const parts = Object.values(selectedParts);
+    if (parts.length === 0) return;
+    parts.forEach(part => {
+      addToCart(part, 1);
+    });
+    setCartOpen(true);
   };
 
   return (
@@ -133,13 +145,24 @@ export default function BuildPCPage() {
                                 <p className="text-xs font-bold text-[var(--dc-accent)]">{formatPrice(selected.priceSale ?? selected.priceRegular)}</p>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 shrink-0">
                               <button 
+                                type="button"
                                 onClick={() => setActiveCategory(cat.id)}
-                                className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--dc-border)] text-[var(--dc-text-subtle)] hover:border-[var(--dc-text)] hover:text-[var(--dc-text)] transition-colors"
+                                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--dc-border)] text-[var(--dc-text-subtle)] hover:border-[var(--dc-text)] hover:text-[var(--dc-text)] transition-colors"
                                 title="Change component"
+                                aria-label={`Change ${cat.name}`}
                               >
                                 <RefreshCcw size={14} />
+                              </button>
+                              <button 
+                                type="button"
+                                onClick={() => handleRemove(cat.id)}
+                                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--dc-border)] text-[var(--dc-text-subtle)] hover:border-red-500 hover:text-red-500 transition-colors"
+                                title="Remove component"
+                                aria-label={`Remove ${cat.name}`}
+                              >
+                                <Trash2 size={14} />
                               </button>
                             </div>
                           </div>
@@ -205,6 +228,7 @@ export default function BuildPCPage() {
                   variant="primary" 
                   className="w-full"
                   disabled={Object.keys(selectedParts).length < CATEGORIES.filter(c => c.required).length || warnings.length > 0}
+                  onClick={handleProceedToCheckout}
                 >
                   Proceed to Checkout
                 </Button>
@@ -218,6 +242,31 @@ export default function BuildPCPage() {
             </div>
           </div>
         </div>
+
+        {/* Mobile Sticky Bottom Summary Bar */}
+        {Object.keys(selectedParts).length > 0 && (
+          <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--dc-surface)] border-t border-[var(--dc-border)] px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-2xl backdrop-blur-md">
+            <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[var(--dc-text-subtle)] block">
+                  {Object.keys(selectedParts).length} of {CATEGORIES.length} parts selected
+                </span>
+                <span className="font-display text-lg font-bold text-[var(--dc-accent)]">
+                  {formatPrice(displayTotal)}
+                </span>
+              </div>
+              <Button 
+                size="sm" 
+                variant="primary" 
+                className="px-5 min-h-[38px] font-semibold"
+                disabled={Object.keys(selectedParts).length < CATEGORIES.filter(c => c.required).length || warnings.length > 0}
+                onClick={handleProceedToCheckout}
+              >
+                Checkout
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Selection Modal Overlay */}
         <AnimatePresence>
@@ -242,13 +291,22 @@ function SelectionModal({
   onSelect 
 }: { 
   category: BuilderCategory; 
-  onClose: () => void;
-  onSelect: (p: any) => void;
+  onClose: () => void; 
+  onSelect: (p: any) => void; 
 }) {
   const products = MOCK_PRODUCTS.filter(p => p.category === category.productCategory);
+  useScrollLock(true);
+
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[var(--dc-z-modal)] flex items-center justify-center p-3 sm:p-6">
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -260,37 +318,38 @@ function SelectionModal({
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative flex h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-bg)] shadow-2xl"
+        className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-bg)] shadow-2xl"
       >
-        <div className="flex items-center justify-between border-b border-[var(--dc-border)] bg-[var(--dc-surface)] p-6">
+        <div className="flex items-center justify-between border-b border-[var(--dc-border)] bg-[var(--dc-surface)] p-4 sm:p-6">
           <div>
-            <h2 className="text-xl font-display font-bold text-[var(--dc-text)]">Select {category.name}</h2>
-            <p className="text-sm text-[var(--dc-text-muted)]">{products.length} options available</p>
+            <h2 className="text-lg sm:text-xl font-display font-bold text-[var(--dc-text)]">Select {category.name}</h2>
+            <p className="text-xs sm:text-sm text-[var(--dc-text-muted)]">{products.length} options available</p>
           </div>
           <button 
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--dc-border)] hover:bg-[var(--dc-surface-2)] transition-colors"
+            aria-label="Close component selector"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--dc-border)] hover:bg-[var(--dc-surface-2)] transition-colors"
           >
-            <Plus size={20} className="rotate-45" />
+            <Plus size={18} className="rotate-45" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {products.map(product => (
               <div 
                 key={product.id}
                 onClick={() => onSelect(product)}
-                className="group cursor-pointer rounded-[var(--dc-radius-xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)] p-4 transition-all hover:border-[var(--dc-accent)]"
+                className="group cursor-pointer rounded-[var(--dc-radius-xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)] p-3.5 sm:p-4 transition-all hover:border-[var(--dc-accent)]"
               >
-                <div className="relative mb-4 aspect-[4/3] w-full rounded-[var(--dc-radius-lg)] bg-[var(--dc-bg)] p-4">
+                <div className="relative mb-3 aspect-[4/3] w-full rounded-[var(--dc-radius-lg)] bg-[var(--dc-bg)] p-3">
                   {product.images?.[0] && (
-                    <Image src={product.images[0].src} alt={product.title} fill className="object-contain p-2 group-hover:scale-110 transition-transform duration-500" />
+                    <Image src={product.images[0].src} alt={product.title} fill className="object-contain p-2 group-hover:scale-105 transition-transform duration-300" />
                   )}
                 </div>
-                <p className="text-xs font-bold uppercase tracking-wider text-[var(--dc-text-subtle)] mb-1">{product.brand}</p>
-                <p className="text-sm font-semibold text-[var(--dc-text)] line-clamp-2 mb-3 group-hover:text-[var(--dc-accent)] transition-colors">{product.title}</p>
-                <p className="text-lg font-bold text-[var(--dc-text)]">{formatPrice(product.priceSale ?? product.priceRegular)}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--dc-text-subtle)] mb-1">{product.brand}</p>
+                <p className="text-xs sm:text-sm font-semibold text-[var(--dc-text)] line-clamp-2 mb-2 group-hover:text-[var(--dc-accent)] transition-colors">{product.title}</p>
+                <p className="text-base font-bold text-[var(--dc-accent)]">{formatPrice(product.priceSale ?? product.priceRegular)}</p>
               </div>
             ))}
           </div>

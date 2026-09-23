@@ -195,13 +195,29 @@ video {
 }
 
 /* ─────────────────────────────────────────────────────────
-   FULL-BLEED LAYER — v2, reconciled against your globals.css
-   Paste at the END of app/globals.css (after .sr-only).
+   FULL-BLEED LAYER — v3
 
-   Overrides --dc-gutter and --dc-header-height from tokens.css,
-   and widens .dc-container / .dc-container-wide to full width.
-   Your .dc-container-narrow is untouched — still a real
-   centred column for long-form pages.
+   v3 adds two things on top of v2, both driven by the header
+   and footer rewrite:
+
+   1. --dc-header-height-mobile existed as a token but nothing
+      ever consumed it — SiteHeader always read
+      --dc-header-height directly, so the header was 5rem tall
+      on a phone too. It's now actually applied below the `sm`
+      breakpoint (639.98px, matching Tailwind's own boundary).
+
+   2. --dc-header-offset — a new derived token: the header's
+      real height PLUS the notch/Dynamic-Island safe area on
+      phones that have one. Anywhere that needs "how far down
+      does content have to start to clear the fixed header"
+      (the mega-menu's position, the mobile menu's top padding,
+      anchor-link scroll offset) should read this instead of
+      --dc-header-height directly, or content ends up drawn
+      under the header by exactly the safe-area amount on a
+      notched phone. The header itself applies the safe-area
+      inset as real padding (in SiteHeader.tsx), so this token
+      and that padding are two halves of the same fix — this is
+      the value they add up to.
 ───────────────────────────────────────────────────────── */
 
 :root {
@@ -212,21 +228,73 @@ video {
   --dc-header-height: 5rem;
   --dc-header-height-mobile: 4.25rem;
 
+  /* True visual footprint of the fixed header, safe-area included. */
+  --dc-header-offset: calc(var(--dc-header-height) + env(safe-area-inset-top, 0px));
+
   /* Reading width, used only where prose would otherwise run
      past 80ch on a wide screen — not a container replacement. */
   --dc-measure: 68ch;
 }
 
-/* Full width, gutter padding, no cage — wins over the
-   max-width:var(--dc-container) rule earlier in this file. */
-.dc-container,
-.dc-container-wide {
-  max-width: none;
-  margin-inline: 0;
+@media (max-width: 639.98px) {
+  :root {
+    --dc-header-height: var(--dc-header-height-mobile);
+  }
 }
 
-/* dc-container-narrow (already in your file) stays as-is:
-   the one place you still want a centred column. */
+/* Gutter padding utility used by header, footer, and full-bleed rails */
+.dc-gutter {
+  padding-inline: var(--dc-gutter);
+}
+
+/* Ensure containers have intentional bounds on large and ultrawide screens */
+.dc-container {
+  width: 100%;
+  max-width: var(--dc-container);
+  margin-inline: auto;
+  padding-inline: var(--dc-gutter);
+}
+
+.dc-container-wide {
+  width: 100%;
+  max-width: var(--dc-container-wide);
+  margin-inline: auto;
+  padding-inline: var(--dc-gutter);
+}
+
+.dc-container-narrow {
+  width: 100%;
+  max-width: var(--dc-container-narrow);
+  margin-inline: auto;
+  padding-inline: var(--dc-gutter);
+}
+
+.dc-hero-container {
+  width: 100%;
+  max-width: var(--dc-container-wide);
+  margin-inline: auto;
+  padding-inline: var(--dc-gutter);
+}
+
+/* Atmospheric enthusiast background subtle patterns */
+.dc-grid-bg {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.dc-dots-bg {
+  background-image: radial-gradient(circle, rgba(255, 106, 26, 0.08) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+/* Prevent auto-zoom on iOS Safari when focusing inputs */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
 
 /* ── Screen-height sections ──
    Add to any section that should own a viewport. svh keeps
@@ -247,7 +315,10 @@ video {
 
 /* ── Scroll behaviour ── */
 html {
-  scroll-padding-top: var(--dc-header-height);
+  /* Was var(--dc-header-height) — updated so a jumped-to anchor
+     (e.g. the hero's "Scroll" cue) lands below the header's real
+     visual bottom edge, not its pre-safe-area height. */
+  scroll-padding-top: var(--dc-header-offset);
 }
 
 body {
@@ -297,4 +368,66 @@ html.lenis body {
 /* Elements animated on scroll — promote once, not per frame. */
 .dc-will-animate {
   will-change: transform, opacity;
+}
+
+/* ─────────────────────────────────────────────────────────
+   BUTTON COMPONENTS (Bypass Tailwind-Merge conflicts)
+───────────────────────────────────────────────────────── */
+.dc-btn-primary {
+  background-color: var(--dc-accent) !important;
+  color: var(--dc-accent-text) !important;
+  font-weight: 600;
+  transition: all var(--dc-duration-fast) var(--dc-ease-out);
+  box-shadow: 0 0 0 0 rgba(255,106,26,0);
+}
+.dc-btn-primary:hover:not(:disabled) {
+  background-color: var(--dc-accent-hover) !important;
+  transform: scale(1.02);
+  box-shadow: var(--dc-shadow-accent);
+}
+.dc-btn-primary:focus-visible {
+  box-shadow: 0 0 0 2px var(--dc-bg), 0 0 0 4px var(--dc-accent);
+}
+
+.dc-btn-secondary {
+  background-color: transparent !important;
+  color: var(--dc-text) !important;
+  border: 1px solid var(--dc-border-strong);
+  font-weight: 500;
+  transition: all var(--dc-duration-fast) var(--dc-ease-out);
+}
+.dc-btn-secondary:hover:not(:disabled) {
+  border-color: var(--dc-accent);
+  color: var(--dc-accent) !important;
+}
+.dc-btn-secondary:focus-visible {
+  box-shadow: 0 0 0 2px var(--dc-bg), 0 0 0 4px var(--dc-accent);
+}
+
+.dc-btn-ghost {
+  background-color: transparent !important;
+  color: var(--dc-text-muted) !important;
+  font-weight: 500;
+  transition: all var(--dc-duration-fast) var(--dc-ease-out);
+}
+.dc-btn-ghost:hover:not(:disabled) {
+  background-color: var(--dc-surface) !important;
+  color: var(--dc-text) !important;
+}
+.dc-btn-ghost:focus-visible {
+  box-shadow: 0 0 0 2px var(--dc-bg), 0 0 0 4px var(--dc-border-strong);
+}
+
+.dc-btn-danger {
+  background-color: var(--dc-error) !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  transition: all var(--dc-duration-fast) var(--dc-ease-out);
+}
+.dc-btn-danger:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+.dc-btn-danger:focus-visible {
+  box-shadow: 0 0 0 2px var(--dc-bg), 0 0 0 4px var(--dc-error);
 }

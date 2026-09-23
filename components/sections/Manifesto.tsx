@@ -11,23 +11,32 @@ import {
   useScroll,
 } from "framer-motion";
 import { useGSAP } from "@gsap/react";
-import { gsap, ScrollTrigger } from "../../lib/gsap";
+import { gsap } from "../../lib/gsap";
+import { useMediaQuery } from "../../lib/useMediaQuery";
 import { ScrollWordFill } from "../motion/Reveal";
 import { EASE, inViewOnce } from "../../lib/motion/Motion";
 
 /* ─────────────────────────────────────────────────────────
-   MANIFESTO — Phase 2 rewrite
+   MANIFESTO — Phase 2 + mobile fix
 
-   Architecture: GSAP ScrollTrigger PIN + SCRUB
-   The section is pinned for 250vh of scroll distance.
-   During that distance:
-   • Left: ScrollWordFill fills word by word (existing, kept)
-   • Right: 4 cards slide in from the right, one at a time,
-     tied directly to scroll position — user controls speed.
+   MOBILE FIX: the pin (`height: 300vh`, GSAP pinning the cards
+   in from the right over 200% of scroll) now only runs when
+   `isDesktop` — same reasoning as BuildSequence: pinning fights
+   touch-scroll momentum and costs three screens of vertical
+   scroll for four cards, on the device where scroll distance
+   matters most.
 
-   This is the "scroll-stop and reveal" pattern described.
-   On reduced-motion: section is un-pinned, cards fade in
-   with whileInView as before.
+   Below `lg`, the section is un-pinned, un-heighted, and the
+   cards render in normal flow with a plain Framer `whileInView`
+   stagger instead of the GSAP scrub timeline. The cards were
+   never hidden by static CSS in the first place — the GSAP
+   effect below sets `opacity:0` itself, only when it's about to
+   run — so skipping that effect on mobile was already safe by
+   construction; this just adds a real entrance for mobile
+   instead of "no entrance at all."
+
+   Everything else — the ScrollWordFill on the left, the counter
+   cards' own logic, the trust checklist — is untouched.
 ───────────────────────────────────────────────────────── */
 
 const FIGURES = [
@@ -48,59 +57,46 @@ export function Manifesto() {
   const pinRef = React.useRef<HTMLDivElement>(null);
   const cardsRef = React.useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const usePinned = isDesktop && !reduced;
 
-  useGSAP(() => {
-    if (reduced || !sectionRef.current || !cardsRef.current) return;
+  useGSAP(
+    () => {
+      if (!usePinned || !sectionRef.current || !cardsRef.current) return;
 
-    const cards = gsap.utils.toArray<HTMLElement>(".manifesto-card", cardsRef.current);
+      const cards = gsap.utils.toArray<HTMLElement>(".manifesto-card", cardsRef.current);
 
-    // Set initial state for all cards — off-screen right, slightly rotated
-    gsap.set(cards, {
-      x: 110,
-      opacity: 0,
-      rotateY: 8,
-      transformOrigin: "left center",
-      transformPerspective: 1000,
-    });
+      gsap.set(cards, {
+        x: 110,
+        opacity: 0,
+        rotateY: 8,
+        transformOrigin: "left center",
+        transformPerspective: 1000,
+      });
 
-    // Create the pinned timeline
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top top",
-        // 250vh of scroll = 2.5 screens of pinned dwell
-        end: "+=200%",
-        pin: pinRef.current,
-        scrub: 1.2, // slightly laggy scrub for cinematic weight
-        anticipatePin: 1,
-      },
-    });
-
-    // Stagger cards across the scroll timeline
-    // Each card occupies ~20% of the total scroll range
-    cards.forEach((card, i) => {
-      const start = i * 0.22; // when this card starts entering (0–0.88)
-      const end = start + 0.2; // when it finishes entering
-
-      tl.to(
-        card,
-        {
-          x: 0,
-          opacity: 1,
-          rotateY: 0,
-          duration: 1,
-          ease: "expo.out",
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "+=200%",
+          pin: pinRef.current,
+          scrub: 1.2,
+          anticipatePin: 1,
         },
-        start
-      );
-    });
+      });
 
-    return () => {
-      tl.kill();
-    };
-  }, { scope: sectionRef });
+      cards.forEach((card, i) => {
+        const start = i * 0.22;
+        tl.to(card, { x: 0, opacity: 1, rotateY: 0, duration: 1, ease: "expo.out" }, start);
+      });
 
-  // Fallback scroll values for the word-fill (unchanged)
+      return () => {
+        tl.kill();
+      };
+    },
+    { scope: sectionRef, dependencies: [usePinned] }
+  );
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start 0.9", "end 0.3"],
@@ -110,24 +106,17 @@ export function Manifesto() {
     <section
       id="manifesto"
       ref={sectionRef}
-      className="relative z-10 bg-[var(--dc-bg)] overflow-hidden"
-      // 300vh total height = 1 screen visible + 200vh scroll range
-      style={reduced ? undefined : { height: "300vh" }}
+      className="relative z-10 overflow-hidden bg-[var(--dc-bg)] dc-grid-bg"
+      style={usePinned ? { height: "300vh" } : undefined}
     >
-      {/* Ambient glow */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 h-[60vh] w-[45vw] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(200,255,0,0.07),transparent_70%)]"
+        className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 h-[60vh] w-[45vw] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(255,106,26,0.08),transparent_70%)]"
       />
 
-      {/* Pinned panel — this sticks to the top while scroll advances */}
-      <div
-        ref={pinRef}
-        className="will-change-transform"
-      >
-        <div className="dc-container py-[16vh] sm:py-[22vh]">
+      <div ref={pinRef} className={usePinned ? "will-change-transform" : undefined}>
+        <div className="dc-container-wide py-[10vh] sm:py-[16vh] lg:py-[20vh]">
           <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-24 lg:items-center">
-
             {/* ── LEFT: scroll word-fill ── */}
             <div>
               <motion.p
@@ -145,7 +134,6 @@ export function Manifesto() {
                 className="font-display font-medium text-[var(--dc-text)] text-[clamp(1.6rem,3.6vw,3.4rem)] leading-[1.14] tracking-[-0.03em]"
               />
 
-              {/* Trust checklist */}
               <motion.ul
                 initial="hidden"
                 whileInView="visible"
@@ -172,18 +160,47 @@ export function Manifesto() {
               </motion.ul>
             </div>
 
-            {/* ── RIGHT: cards that reveal on scroll ── */}
-            <div ref={cardsRef} className="flex flex-col gap-5">
-              {FIGURES.map((figure, i) => (
-                <div key={figure.label} className="manifesto-card">
-                  <Figure {...figure} index={i} />
+            {/* ── RIGHT: cards ── */}
+            {usePinned ? (
+              <div ref={cardsRef} className="flex flex-col gap-5">
+                {FIGURES.map((figure, i) => (
+                  <div key={figure.label} className="manifesto-card">
+                    <Figure {...figure} index={i} />
+                  </div>
+                ))}
+                <div className="manifesto-card">
+                  <LiveCard />
                 </div>
-              ))}
-              <div className="manifesto-card">
-                <LiveCard />
               </div>
-            </div>
-
+            ) : (
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={inViewOnce}
+                variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
+                className="flex flex-col gap-5"
+              >
+                {FIGURES.map((figure, i) => (
+                  <motion.div
+                    key={figure.label}
+                    variants={{
+                      hidden: { opacity: 0, y: 24 },
+                      visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE.out } },
+                    }}
+                  >
+                    <Figure {...figure} index={i} />
+                  </motion.div>
+                ))}
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: 24 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE.out } },
+                  }}
+                >
+                  <LiveCard />
+                </motion.div>
+              </motion.div>
+            )}
           </div>
         </div>
       </div>
@@ -225,10 +242,9 @@ function Figure({
       ref={ref}
       className="group relative overflow-hidden rounded-[var(--dc-radius-xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)] p-6 transition-colors duration-500 hover:border-[var(--dc-accent)]/30"
     >
-      {/* Hover glow */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100 bg-[radial-gradient(ellipse_at_top_right,rgba(200,255,0,0.08),transparent_60%)]"
+        className="absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100 bg-[radial-gradient(ellipse_at_top_right,rgba(255,106,26,0.10),transparent_60%)]"
       />
       <div className="relative flex items-end justify-between">
         <div>

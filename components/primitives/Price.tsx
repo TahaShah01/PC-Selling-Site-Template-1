@@ -34,7 +34,7 @@ function Price({ regular, sale, size = "md", className }: PriceProps) {
           "font-semibold",
           sizeClass,
           isOnSale
-            ? "text-[var(--dc-accent-2)]"
+            ? "text-[var(--dc-accent)]"
             : "text-[var(--dc-text)]"
         )}
       >
@@ -68,7 +68,7 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const BADGE_VARIANTS: Record<BadgeVariant, string> = {
   accent: "bg-[var(--dc-accent-dim)] text-[var(--dc-accent)] border-[var(--dc-border-accent)]",
-  sale: "bg-[var(--dc-accent-2-dim)] text-[var(--dc-accent-2)] border-[rgba(255,106,26,0.3)]",
+  sale: "bg-[var(--dc-accent-dim)] text-[var(--dc-accent)] border-[var(--dc-border-accent)]",
   new: "bg-[var(--dc-accent-dim)] text-[var(--dc-accent)] border-[var(--dc-border-accent)]",
   stock: "bg-[rgba(34,197,94,0.12)] text-[var(--dc-success)] border-[rgba(34,197,94,0.3)]",
   neutral: "bg-[var(--dc-surface-2)] text-[var(--dc-text-muted)] border-[var(--dc-border)]",

@@ -58,7 +58,7 @@ export default function GamingPCsPage() {
           body="Expertly curated and professionally assembled systems. Tested for 48 hours. Ready to plug and play."
         />
 
-        <div className="dc-container py-16 lg:py-24">
+        <div className="dc-container-wide py-16 lg:py-24">
           
           {/* Tier Filters */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-16">
@@ -77,8 +77,8 @@ export default function GamingPCsPage() {
             ))}
           </div>
 
-          {/* Builds Grid — 3-column responsive layout with compact card sizing */}
-          <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Builds Grid — responsive layout with compact card sizing */}
+          <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[2560px]:grid-cols-4 min-[3840px]:grid-cols-5 gap-6">
             {filteredBuilds.map((pc) => (
               <Link 
                 key={pc.slug} 
@@ -88,7 +88,7 @@ export default function GamingPCsPage() {
                 {/* Image Section */}
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-[var(--dc-surface-2)]">
                   {/* Ambient Glow */}
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(200,255,0,0.1),transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,106,26,0.14),transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
                   
                   {/* Badges */}
                   <div className="absolute top-3 left-3 z-10 flex gap-1.5">

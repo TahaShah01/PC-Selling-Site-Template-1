@@ -12,6 +12,9 @@ import { PageShell } from "@/components/sections/PageHero";
 import { GAMING_PCS } from "@/data/gaming-pcs";
 import { Button } from "@/components/primitives/Button";
 import { formatPrice } from "@/lib/utils";
+import { useCartStore } from "@/lib/store/cart";
+import { BUSINESS } from "@/data/business";
+import type { Product } from "@/types";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "../../../lib/gsap";
 
@@ -20,13 +23,48 @@ export default function GamingPCDetailPage({ params }: { params: Promise<{ slug:
   const pc = GAMING_PCS.find((b) => b.slug === slug);
   const reduced = useReducedMotion();
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const { addToCart, setIsOpen: setCartOpen } = useCartStore();
+  const [added, setAdded] = React.useState(false);
 
   if (!pc) notFound();
+
+  const handleAddToCart = () => {
+    const pcProduct: Product = {
+      id: `pc-${pc.slug}`,
+      slug: pc.slug,
+      title: pc.name,
+      brand: "DadduCharger Builds",
+      category: "gaming-pcs",
+      priceRegular: pc.priceRaw,
+      currency: "PKR",
+      images: [{ id: "pc-img", src: pc.image, alt: pc.name }],
+      specs: pc.components,
+      highlights: pc.highlights,
+      inStock: pc.isAvailable,
+      isNew: false,
+      isFeatured: pc.isFeatured,
+      isBestSeller: pc.badge === "Best Seller",
+      condition: "new",
+      description: `${pc.tagline} — ${pc.spec}`,
+      tags: ["gaming-pc", pc.tier],
+      publishedAt: new Date().toISOString(),
+    };
+
+    addToCart(pcProduct, 1);
+    setAdded(true);
+    setCartOpen(true);
+    setTimeout(() => setAdded(false), 2500);
+  };
+
+  const cleanPhone = BUSINESS.whatsapp.replace(/[^0-9]/g, "") || "923001234567";
+  const whatsappOrderUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+    `Assalam-o-Alaikum Daddu Charger! I'm interested in ordering the pre-built PC:\n\n*${pc.name}* (${pc.price})\nTier: ${pc.tier}\nSpecs: ${pc.spec}\n\nPlease confirm availability and delivery timeframe.`
+  )}`;
 
   useGSAP(
     () => {
       if (!containerRef.current || reduced) return;
-      
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
@@ -39,18 +77,18 @@ export default function GamingPCDetailPage({ params }: { params: Promise<{ slug:
         { opacity: 0, scale: 0.9, filter: "blur(10px)" },
         { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1, ease: "expo.out" }
       )
-      .fromTo(
-        ".pc-info-item",
-        { opacity: 0, x: -20 },
-        { opacity: 1, x: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" },
-        "-=0.6"
-      )
-      .fromTo(
-        ".pc-spec-row",
-        { opacity: 0, y: 15 },
-        { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: "power1.out" },
-        "-=0.4"
-      );
+        .fromTo(
+          ".pc-info-item",
+          { opacity: 0, x: -20 },
+          { opacity: 1, x: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" },
+          "-=0.6"
+        )
+        .fromTo(
+          ".pc-spec-row",
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: "power1.out" },
+          "-=0.4"
+        );
     },
     { scope: containerRef, dependencies: [reduced] }
   );
@@ -59,10 +97,10 @@ export default function GamingPCDetailPage({ params }: { params: Promise<{ slug:
     <>
       <SiteHeader />
       <PageShell>
-        <div ref={containerRef} className="dc-container pt-8 pb-24">
-          
-          <Link 
-            href="/gaming-pcs" 
+        <div ref={containerRef} className="dc-container-wide pt-8 pb-24">
+
+          <Link
+            href="/gaming-pcs"
             className="inline-flex items-center gap-2 text-sm font-medium text-[var(--dc-text-muted)] hover:text-[var(--dc-accent)] transition-colors mb-8"
           >
             <ArrowLeft size={16} />
@@ -74,11 +112,11 @@ export default function GamingPCDetailPage({ params }: { params: Promise<{ slug:
             <div className="pc-hero-image relative aspect-[4/5] lg:aspect-[3/4] w-full rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)] overflow-hidden flex items-center justify-center p-12">
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(200,255,0,0.1),transparent_70%)] opacity-50"
+                className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--dc-orange-glow),transparent_70%)] opacity-40"
               />
               <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
                 {pc.badge && (
-                  <span className="bg-[var(--dc-accent)] text-[var(--dc-accent-text)] text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-[0_0_10px_rgba(200,255,0,0.3)]">
+                  <span className="bg-[var(--dc-accent)] text-[var(--dc-accent-text)] text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-[0_0_15px_var(--dc-orange-glow)]">
                     {pc.badge}
                   </span>
                 )}
@@ -90,6 +128,7 @@ export default function GamingPCDetailPage({ params }: { params: Promise<{ slug:
                 src={pc.image}
                 alt={pc.name}
                 fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover dark:mix-blend-screen"
                 priority
               />
@@ -112,9 +151,24 @@ export default function GamingPCDetailPage({ params }: { params: Promise<{ slug:
                   <p className="text-sm font-medium text-[var(--dc-text-subtle)] uppercase tracking-wider mb-2">Price</p>
                   <p className="text-4xl font-display font-bold text-[var(--dc-accent)]">{pc.price}</p>
                 </div>
-                <div className="flex gap-3">
-                  <Button size="lg" variant="primary" className="w-full sm:w-auto min-w-[200px]">
-                    Configure & Buy
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  <Button
+                    size="lg"
+                    variant="primary"
+                    className="w-full sm:w-auto min-w-[180px]"
+                    onClick={handleAddToCart}
+                  >
+                    {added ? "Added to Cart ✓" : "Add to Cart"}
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="w-full sm:w-auto"
+                    href={whatsappOrderUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Order via WhatsApp
                   </Button>
                 </div>
               </div>
@@ -137,16 +191,16 @@ export default function GamingPCDetailPage({ params }: { params: Promise<{ slug:
               {/* Benchmarks (if available) */}
               {pc.benchmarks && pc.benchmarks.length > 0 && (
                 <div className="mb-10 pc-info-item">
-                   <h3 className="text-lg font-semibold text-[var(--dc-text)] mb-4">Performance</h3>
-                   <div className="grid sm:grid-cols-3 gap-4">
-                     {pc.benchmarks.map((bench, i) => (
-                       <div key={i} className="bg-[var(--dc-surface-2)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] p-4 text-center">
-                         <p className="text-[10px] font-bold uppercase text-[var(--dc-text-subtle)] mb-1">{bench.game}</p>
-                         <p className="text-xl font-display font-bold text-[var(--dc-text)] mb-1">{bench.fps}</p>
-                         <p className="text-[10px] text-[var(--dc-text-muted)]">{bench.resolution}</p>
-                       </div>
-                     ))}
-                   </div>
+                  <h3 className="text-lg font-semibold text-[var(--dc-text)] mb-4">Performance</h3>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    {pc.benchmarks.map((bench, i) => (
+                      <div key={i} className="bg-[var(--dc-surface-2)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] p-4 text-center">
+                        <p className="text-[10px] font-bold uppercase text-[var(--dc-text-subtle)] mb-1">{bench.game}</p>
+                        <p className="text-xl font-display font-bold text-[var(--dc-text)] mb-1">{bench.fps}</p>
+                        <p className="text-[10px] text-[var(--dc-text-muted)]">{bench.resolution}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

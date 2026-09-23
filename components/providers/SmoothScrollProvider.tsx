@@ -6,20 +6,23 @@ import { useReducedMotion } from "framer-motion";
 import { gsap, ScrollTrigger } from "../../lib/gsap";
 
 /* ─────────────────────────────────────────────────────────
-   SMOOTH SCROLL PROVIDER — Phase 0 rewrite
+   SMOOTH SCROLL PROVIDER — Phase 0 rewrite + mobile fix
 
-   Key change from the previous version:
-   • Lenis now runs through gsap.ticker instead of its own
-     requestAnimationFrame loop. This gives frame-perfect
-     synchronisation between Lenis's virtual scroll position
-     and GSAP ScrollTrigger — fixing the 1-2 frame lag that
-     made all scroll-linked animations feel slightly off.
-   • ScrollTrigger is pointed at Lenis via scrollerProxy so
-     GSAP reads the virtual position, not native scrollTop.
-   • useScrollLock no longer touches document.overflow —
-     lenis.stop() is sufficient and avoids layout shifts.
-   • scrollbar-gutter: stable in globals.css prevents the
-     width jump when the scrollbar disappears on lock.
+   Everything below the "MOBILE FIX" comment is unchanged from
+   the existing rewrite (Lenis through gsap.ticker, scrollerProxy,
+   lock via lenis.stop()). The one addition:
+
+   MOBILE FIX — ScrollTrigger.config({ ignoreMobileResize: true })
+   On phones, the address bar hiding/showing as you scroll fires
+   a `resize` event, because the visible viewport height actually
+   changes. ScrollTrigger's default reaction to any resize is to
+   recalculate every pinned section's start/end — which, mid-pin,
+   causes a visible jump or jitter. This is the documented GSAP
+   fix: ignore resizes that are only a mobile viewport-height
+   wobble, not a real layout change. Without it, every pinned
+   section (Manifesto, BuildSequence, the desktop HorizontalShowcase)
+   can stutter the first time a phone's browser chrome collapses
+   mid-scroll.
 ───────────────────────────────────────────────────────── */
 
 type Ctx = {
@@ -42,6 +45,9 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
   React.useEffect(() => {
     if (reduced) return;
 
+    // MOBILE FIX — see header comment.
+    ScrollTrigger.config({ ignoreMobileResize: true });
+
     const instance = new Lenis({
       duration: 1.15,
       // expo-out — matches EASE.out so scroll and animation share a feel
@@ -55,9 +61,6 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     setLenis(instance);
 
     // ── Wire Lenis through GSAP's ticker for perfect sync ──
-    // GSAP's internal ticker runs at display refresh rate.
-    // lagSmoothing(0) tells GSAP not to compress time when
-    // the tab becomes visible again — prevents animation jumps.
     gsap.ticker.lagSmoothing(0);
     const onTick = (time: number) => instance.raf(time * 1000);
     gsap.ticker.add(onTick);
@@ -81,10 +84,7 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       pinType: "transform",
     });
 
-    // Refresh ScrollTrigger after each Lenis scroll tick
     instance.on("scroll", ScrollTrigger.update);
-
-    // Also refresh on resize
     ScrollTrigger.addEventListener("refresh", () => instance.scrollTo(instance.scroll, { immediate: true }));
     ScrollTrigger.refresh();
 
@@ -124,17 +124,24 @@ export function useScrollLock(locked: boolean) {
   const { lenis } = useLenis();
 
   React.useEffect(() => {
-    // Only lenis.stop() / start() — no overflow:hidden needed.
-    // overflow:hidden on documentElement triggers a layout shift
-    // (scrollbar disappears → content reflows to fill the gap).
-    // Lenis prevents scroll events without touching layout.
+    if (typeof window === "undefined") return;
+
     if (locked) {
       lenis?.stop();
+      const originalOverflow = document.body.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+
+      return () => {
+        lenis?.start();
+        document.body.style.overflow = originalOverflow;
+        document.body.style.touchAction = originalTouchAction;
+      };
     } else {
       lenis?.start();
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     }
-    return () => {
-      lenis?.start();
-    };
   }, [locked, lenis]);
 }

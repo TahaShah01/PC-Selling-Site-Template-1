@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useGSAP } from "@gsap/react";
 import { gsap, ScrollTrigger } from "../../lib/gsap";
+import { useMediaQuery } from "../../lib/useMediaQuery";
 import {
     Gamepad2,
     Monitor,
@@ -22,21 +23,24 @@ import {
 } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────
-   BUILD SEQUENCE — Phase 5
+   BUILD SEQUENCE — Phase 5 + mobile fix
 
-   Everything on ONE scrub timeline, not React state fired by
-   a boolean. Cards, rows, checklist ticks and counted-up
-   numbers are all `.bs-item` / `.bs-count` elements tagged
-   with data-step / data-order, positioned on the same
-   ScrollTrigger-scrubbed timeline that drives the pin and the
-   text cross-fade. Scroll up mid-count and the number counts
-   back down — it's reading your scroll position, not playing
-   a clip.
+   MOBILE FIX (the only structural change from Phase 5):
+   `StaticBuildList` previously rendered only when `reduced` was
+   true. It now also renders below `lg` (1024px) — a JS-pinned
+   400vh scroll-hijack is a bad experience on a touch screen
+   regardless of motion preference: it fights momentum scrolling,
+   and mobile Safari's address-bar resize can jitter a pin mid-
+   scroll (see SmoothScrollProvider for the `ignoreMobileResize`
+   fix, which helps but doesn't remove the fundamental UX problem
+   of hijacking a phone's scroll for 4 screens). Everything else —
+   the scrubbed timeline, every scene, the counters — is exactly
+   the Phase 5 version, untouched.
 
-   React state (`active`, `progress`) exists only for what
-   actually needs a re-render: aria-hidden, pointer-events,
-   the step readout, the rail position. It never drives an
-   animation.
+   `StaticBuildList` itself is upgraded from plain static content
+   to a real (Framer, non-GSAP, viewport-only) whileInView reveal,
+   so mobile/tablet visitors still get a sequenced entrance —
+   scroll control is just never taken away from them for it.
 ───────────────────────────────────────────────────────── */
 
 type StepId = "spec" | "source" | "assemble" | "burnin";
@@ -84,14 +88,15 @@ const SEG = 1 / STEPS.length;
 
 export function BuildSequence() {
     const reduced = useReducedMotion();
+    const isDesktop = useMediaQuery("(min-width: 1024px)");
 
-    if (reduced) return <StaticBuildList />;
+    if (reduced || !isDesktop) return <StaticBuildList />;
 
     return <ScrubbedBuildSequence />;
 }
 
 /* ─────────────────────────────────────────────────────────
-   Scroll-scrubbed version
+   Scroll-scrubbed version (desktop only, motion allowed)
 ───────────────────────────────────────────────────────── */
 
 function ScrubbedBuildSequence() {
@@ -133,7 +138,6 @@ function ScrubbedBuildSequence() {
                 },
             });
 
-            // Text + scene cross-fade at each step boundary
             STEPS.forEach((_, i) => {
                 if (i === 0) return;
                 const t = i * SEG;
@@ -143,9 +147,6 @@ function ScrubbedBuildSequence() {
                     .to(scenePanels[i], { autoAlpha: 1, scale: 1, duration: 0.08 }, t - 0.03);
             });
 
-            // Every card / row / checklist tick fades in inside its own
-            // step's slice of the timeline — reversible, because it's
-            // just a tween position, not a mount.
             items.forEach((el) => {
                 const step = Number(el.dataset.step);
                 const order = Number(el.dataset.order ?? 0);
@@ -153,8 +154,6 @@ function ScrubbedBuildSequence() {
                 tl.to(el, { autoAlpha: 1, y: 0, duration: 0.14, ease: "power2.out" }, start);
             });
 
-            // Numbers count from 0 to their target, scrubbed — scroll
-            // back mid-count and the value counts back down with you.
             counters.forEach((el) => {
                 const step = Number(el.dataset.step);
                 const to = Number(el.dataset.to);
@@ -201,7 +200,7 @@ function ScrubbedBuildSequence() {
                     }}
                 />
 
-                <div className="dc-container relative grid h-screen items-center gap-8 py-24 lg:grid-cols-12 lg:py-0">
+                <div className="dc-container relative grid h-[100svh] items-center gap-8 py-24 lg:grid-cols-12 lg:py-0">
                     {/* ── TEXT COLUMN ── */}
                     <div className="relative z-20 lg:col-span-5">
                         <div className="mb-8 flex items-center gap-4">
@@ -238,7 +237,6 @@ function ScrubbedBuildSequence() {
                             ))}
                         </div>
 
-                        {/* Rail — thicker, with a scrubber knob riding the exact progress value */}
                         <div className="relative mt-8 h-1 rounded-full bg-[var(--dc-border)]">
                             <div
                                 className="absolute inset-y-0 left-0 rounded-full bg-[var(--step-accent)] transition-[background] duration-700"
@@ -252,8 +250,7 @@ function ScrubbedBuildSequence() {
                     </div>
 
                     {/* ── SCENE COLUMN ── */}
-                    <div className="relative h-[54vh] lg:col-span-7 lg:h-[76vh]">
-                        {/* Ambient watermark numeral */}
+                    <div className="relative h-[76vh] lg:col-span-7">
                         <p
                             aria-hidden="true"
                             className="pointer-events-none absolute -right-4 -top-10 select-none font-display text-[16rem] font-bold leading-none tracking-[-0.06em] text-[var(--dc-text)] opacity-[0.035]"
@@ -478,12 +475,10 @@ function BurninScene({ stepIndex }: { stepIndex: number }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Reduced-motion fallback — plain stacked list, normal
-   document flow, no pin, no absolute-positioned panels.
-   (The scrubbed version's panels only get their visibility
-   set by GSAP; skipping straight to that markup here would
-   leave all four stacked on top of each other at full
-   opacity, which is what the previous version did.)
+   Fallback — reduced motion OR below lg (mobile/tablet).
+   Normal document flow, no pin, no absolute-positioned
+   panels. Framer whileInView only — never GSAP, so it's
+   correct regardless of which condition triggered it.
 ───────────────────────────────────────────────────────── */
 
 function StaticBuildList() {
@@ -492,8 +487,15 @@ function StaticBuildList() {
             <div className="dc-container">
                 <p className="mb-10 text-xs text-[var(--dc-text-subtle)]">How we build</p>
                 <div className="grid gap-10 sm:grid-cols-2">
-                    {STEPS.map((step) => (
-                        <div key={step.num} className="border-t border-[var(--dc-border)] pt-6">
+                    {STEPS.map((step, i) => (
+                        <motion.div
+                            key={step.num}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-10% 0px" }}
+                            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: (i % 2) * 0.08 }}
+                            className="border-t border-[var(--dc-border)] pt-6"
+                        >
                             <p className="font-display text-2xl font-bold tabular-nums text-[var(--dc-accent)]">{step.num}</p>
                             <h3 className="mt-2 font-display text-xl font-bold text-[var(--dc-text)]">{step.title}</h3>
                             <p className="mt-3 max-w-[46ch] text-sm leading-relaxed text-[var(--dc-text-muted)]">{step.body}</p>
@@ -507,7 +509,7 @@ function StaticBuildList() {
                                     </span>
                                 ))}
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             </div>

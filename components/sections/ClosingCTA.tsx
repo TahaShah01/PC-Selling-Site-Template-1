@@ -71,7 +71,7 @@ type Stat = {
 const SOCIAL_PROOF: Stat[] = [
   {
     Icon: Star,
-    accent: "#C8FF00",
+    accent: "#FF6A1A",
     label: "Customer satisfaction",
     sub: "Based on 200+ build reviews",
     to: 4.9,
@@ -80,7 +80,7 @@ const SOCIAL_PROOF: Stat[] = [
   },
   {
     Icon: Clock,
-    accent: "#C8FF00",
+    accent: "#FF6A1A",
     label: "Avg. response time",
     sub: "Same-day spec reply, Mon–Sat",
     to: 2,
@@ -238,7 +238,7 @@ export function ClosingCTA() {
         className="pointer-events-none absolute inset-0"
         style={{
           opacity: bgOpacity,
-          background: "radial-gradient(80rem 60rem at 50% 60%, rgba(200,255,0,0.10), transparent 65%)",
+          background: "radial-gradient(80rem 60rem at 50% 60%, rgba(255,106,26,0.12), transparent 65%)",
         }}
       />
 
@@ -249,7 +249,7 @@ export function ClosingCTA() {
         transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
         style={{
           background:
-            "conic-gradient(from 0deg at 50% 50%, #C8FF00, transparent 30%, #FF6A1A, transparent 60%, #C8FF00)",
+            "conic-gradient(from 0deg at 50% 50%, #FF6A1A, transparent 30%, #EA580C, transparent 60%, #FF6A1A)",
         }}
       />
 
@@ -287,7 +287,7 @@ export function ClosingCTA() {
                   x="0.5"
                   y="0.5"
                   rx="var(--dc-radius-xl, 16px)"
-                  stroke="rgba(200,255,0,0.5)"
+                  stroke="rgba(255,106,26,0.6)"
                   strokeWidth="1"
                 />
               </svg>

@@ -49,41 +49,7 @@ import { useCursor } from "../motion/Cursor";
    a work light" rather than a generic hover glow.
 ───────────────────────────────────────────────────────── */
 
-type Build = {
-  name: string;
-  tier: string;
-  spec: string;
-  price: string;
-  href: string;
-  image: string;
-};
-
-const BUILDS: Build[] = [
-  {
-    name: "Volt 4070",
-    tier: "1440p / high refresh",
-    spec: "Ryzen 7 7800X3D · RTX 4070 Super · 32GB DDR5 · 2TB NVMe",
-    price: "PKR 585,000",
-    href: "/gaming-pcs/volt-4070",
-    image: "/hero-pc.jpg",
-  },
-  {
-    name: "Compact ITX",
-    tier: "Small form factor",
-    spec: "Core i5-14600K · RTX 4060 Ti · 32GB DDR5 · 1TB NVMe",
-    price: "PKR 395,000",
-    href: "/gaming-pcs/compact-itx",
-    image: "/category_grid_bg_1789821288197.jpg",
-  },
-  {
-    name: "Café Ten",
-    tier: "Gaming café fitout",
-    spec: "Core i3-13100F · RTX 3050 · 16GB DDR4 · 512GB NVMe",
-    price: "From PKR 165,000 / unit",
-    href: "/gaming-pcs/cafe-ten",
-    image: "/circuit-bg.jpg",
-  },
-];
+import { FEATURED_BUILDS, GamingPC } from "@/data/gaming-pcs";
 
 export function FeaturedBuilds() {
   const sectionRef = React.useRef<HTMLElement>(null);
@@ -96,30 +62,42 @@ export function FeaturedBuilds() {
 
     const cards = gsap.utils.toArray<HTMLElement>(".build-card", gridRef.current);
 
-    gsap.set(cards, { clipPath: "inset(100% 0% 0% 0%)", scale: 1.04 });
-
-    gsap.to(cards, {
-      clipPath: "inset(0% 0% 0% 0%)",
-      scale: 1,
-      duration: 1.3,
-      ease: "expo.out",
-      stagger: 0.14,
-      scrollTrigger: {
-        trigger: gridRef.current,
-        start: "top 75%",
-        toggleActions: "play none none none",
-      },
-    });
+    gsap.fromTo(
+      cards,
+      { opacity: 0, y: 50 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "expo.out",
+        stagger: 0.1,
+        scrollTrigger: {
+          trigger: gridRef.current,
+          start: "top 85%",
+          toggleActions: "play none none none",
+        },
+      }
+    );
   }, { scope: sectionRef, dependencies: [reduced] });
 
   return (
     <section
       ref={sectionRef}
-      className="relative z-10 bg-[var(--dc-bg)] py-[14vh]"
+      className="relative z-10 bg-[var(--dc-bg)] py-[12vh] overflow-hidden"
       aria-label="Featured builds"
       style={{ isolation: "isolate" }}
     >
-      <div className="dc-container">
+      {/* Ambient background lighting */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 opacity-50"
+        style={{
+          background:
+            "radial-gradient(80rem 50rem at 50% 15%, rgba(255,106,26,0.08), transparent 70%)",
+        }}
+      />
+
+      <div className="dc-container-wide relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -133,29 +111,29 @@ export function FeaturedBuilds() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={inViewOnce}
               transition={{ duration: 0.6, ease: EASE.out }}
-              className="mb-3 text-xs uppercase tracking-[0.14em] text-[var(--dc-accent)]"
+              className="mb-3 text-xs uppercase tracking-[0.14em] text-[var(--dc-accent)] font-semibold"
             >
-              Featured builds
+              Enthusiast Showroom
             </motion.p>
-            <h2 className="font-display font-bold text-[var(--dc-text)] text-[clamp(1.75rem,4vw,3.25rem)] leading-none tracking-[-0.03em]">
-              Recent builds
+            <h2 className="font-display font-bold text-[var(--dc-text)] text-[clamp(2rem,4vw,3.5rem)] leading-none tracking-[-0.03em]">
+              Featured PC Builds
             </h2>
           </div>
           <Link
             href="/gaming-pcs"
-            className="group flex items-center gap-1.5 text-sm text-[var(--dc-text-muted)] hover:text-[var(--dc-accent)] transition-colors"
+            className="group flex items-center gap-2 text-sm font-semibold text-[var(--dc-text)] hover:text-[var(--dc-accent)] transition-colors px-4 py-2 rounded-full border border-[var(--dc-border)] hover:border-[var(--dc-accent)] bg-[var(--dc-surface)]"
           >
-            All builds
+            <span>View All Rigs</span>
             <ArrowUpRight
               size={15}
-              className="transition-transform duration-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 text-[var(--dc-accent)]"
             />
           </Link>
         </motion.div>
 
-        <div ref={gridRef} className="grid gap-x-6 gap-y-16 md:grid-cols-2 lg:grid-cols-3">
-          {BUILDS.map((build, i) => (
-            <BuildCard key={build.name} build={build} index={i} />
+        <div ref={gridRef} className="grid gap-6 lg:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[2560px]:grid-cols-4 min-[3840px]:grid-cols-5">
+          {FEATURED_BUILDS.map((build, i) => (
+            <BuildCard key={build.slug} build={build} index={i} />
           ))}
         </div>
       </div>
@@ -163,7 +141,7 @@ export function FeaturedBuilds() {
   );
 }
 
-function BuildCard({ build }: { build: Build; index: number }) {
+function BuildCard({ build }: { build: GamingPC; index: number }) {
   const articleRef = React.useRef<HTMLElement>(null);
   const cardRef = React.useRef<HTMLAnchorElement>(null);
   const imageWrapRef = React.useRef<HTMLDivElement>(null);
@@ -240,16 +218,16 @@ function BuildCard({ build }: { build: Build; index: number }) {
   }, { dependencies: [reduced] });
 
   return (
-    <article ref={articleRef} className="build-card">
+    <article ref={articleRef} className="build-card p-4 rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)]/60 hover:border-[var(--dc-border-accent)] hover:bg-[var(--dc-surface)] transition-all duration-500 hover:shadow-2xl flex flex-col justify-between">
       <Link
         ref={cardRef}
-        href={build.href}
+        href={`/gaming-pcs/${build.slug}`}
         onMouseEnter={() => cursor.set("view", "View build")}
         onMouseLeave={cursor.reset}
         className="group focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--dc-accent)]"
       >
         {/* Image frame */}
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[var(--dc-radius-xl)] bg-[var(--dc-surface)] transition-shadow duration-700 group-hover:shadow-[0_0_40px_rgba(200,255,0,0.10)]">
+        <div className="relative aspect-[16/11] sm:aspect-[4/5] overflow-hidden rounded-[var(--dc-radius-xl)] bg-[var(--dc-surface-2)] transition-shadow duration-700 group-hover:shadow-[0_0_40px_var(--dc-orange-glow)]">
           <div ref={imageWrapRef} className="absolute -inset-y-[12%] inset-x-0">
             <Image
               src={build.image}
@@ -266,17 +244,16 @@ function BuildCard({ build }: { build: Build; index: number }) {
               ref={spotlightRef}
               aria-hidden="true"
               className="pointer-events-none absolute left-0 top-0 h-72 w-72 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100"
-              style={{ background: "radial-gradient(circle, rgba(200,255,0,0.35), transparent 70%)" }}
+              style={{ background: "radial-gradient(circle, var(--dc-orange-glow-strong), transparent 70%)" }}
             />
           )}
 
           {/* Tier badge */}
-          <span className="absolute left-4 top-4 rounded-full bg-[var(--dc-bg)]/70 px-3 py-1 text-[11px] text-[var(--dc-text-muted)] backdrop-blur-md">
+          <span className="absolute left-4 top-4 rounded-full bg-[var(--dc-bg)]/85 px-3 py-1 text-[11px] font-semibold text-[var(--dc-text)] backdrop-blur-md border border-[var(--dc-border)]">
             {build.tier}
           </span>
 
-          {/* View badge — now actually reveals on card hover, driven by
-              the same handlers as the tilt, so it's never out of sync. */}
+          {/* View badge */}
           <span
             ref={badgeRef}
             className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-[var(--dc-accent)] px-3 py-1 text-[11px] font-semibold"
@@ -286,31 +263,42 @@ function BuildCard({ build }: { build: Build; index: number }) {
                 : { color: "var(--dc-accent-text)", opacity: 0, transform: "scale(0.7)" }
             }
           >
-            View build
+            Configure
             <ArrowUpRight size={11} />
           </span>
 
           {/* Gradient overlay on hover */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
         </div>
 
-        {/* Footer */}
-        <div className="mt-5 flex items-baseline justify-between gap-4 border-t border-[var(--dc-border)] pt-4">
-          <h3 className="font-display text-xl font-semibold tracking-[-0.02em] text-[var(--dc-text)] transition-colors duration-300 group-hover:text-[var(--dc-accent)]">
+        {/* Header & Price */}
+        <div className="mt-4 flex items-baseline justify-between gap-4 border-t border-[var(--dc-border)] pt-3.5">
+          <h3 className="font-display text-xl font-bold tracking-[-0.02em] text-[var(--dc-text)] transition-colors duration-300 group-hover:text-[var(--dc-accent)]">
             {build.name}
           </h3>
 
           <div className="relative h-5 overflow-hidden text-right">
-            <span className="block text-sm tabular-nums text-[var(--dc-text-muted)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-full">
+            <span className="block text-sm font-bold tabular-nums text-[var(--dc-accent)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-full">
               {build.price}
             </span>
-            <span className="absolute inset-0 block translate-y-full text-[11px] text-[var(--dc-accent)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0">
-              See full spec →
+            <span className="absolute inset-0 block translate-y-full text-[11px] font-bold text-[var(--dc-accent)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0">
+              Customize Rig →
             </span>
           </div>
         </div>
 
-        <p className="mt-2 text-sm text-[var(--dc-text-subtle)]">{build.spec}</p>
+        {/* Spec Chips Row */}
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[var(--dc-surface-2)] text-[var(--dc-text-muted)] border border-[var(--dc-border)]">
+            {build.components.gpu.split(" ").slice(0, 3).join(" ")}
+          </span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[var(--dc-surface-2)] text-[var(--dc-text-muted)] border border-[var(--dc-border)]">
+            {build.components.cpu.split(" ").slice(0, 3).join(" ")}
+          </span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[var(--dc-surface-2)] text-[var(--dc-text-muted)] border border-[var(--dc-border)]">
+            {build.components.ram}
+          </span>
+        </div>
       </Link>
     </article>
   );

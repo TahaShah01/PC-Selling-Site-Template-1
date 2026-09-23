@@ -79,6 +79,7 @@ const BORDER_COLORS: Record<Mode, string> = {
 function Cursor({ mode, label }: { mode: Mode; label: string }) {
     const reduced = useReducedMotion();
     const [enabled, setEnabled] = React.useState(false);
+    const [scaleFactor, setScaleFactor] = React.useState(1);
 
     const x = useMotionValue(-100);
     const y = useMotionValue(-100);
@@ -87,10 +88,24 @@ function Cursor({ mode, label }: { mode: Mode; label: string }) {
 
     React.useEffect(() => {
         const mq = window.matchMedia("(pointer: fine)");
-        const apply = () => setEnabled(mq.matches);
+        const checkTouch = () => "ontouchstart" in window || navigator.maxTouchPoints > 0;
+        
+        const apply = () => setEnabled(mq.matches && !checkTouch());
         apply();
         mq.addEventListener("change", apply);
-        return () => mq.removeEventListener("change", apply);
+
+        const onResize = () => {
+            if (window.innerWidth > 2560) setScaleFactor(1.75); // 4K+
+            else if (window.innerWidth > 1920) setScaleFactor(1.25); // 2K
+            else setScaleFactor(1); // Standard
+        };
+        onResize();
+        window.addEventListener("resize", onResize);
+
+        return () => {
+            mq.removeEventListener("change", apply);
+            window.removeEventListener("resize", onResize);
+        };
     }, []);
 
     React.useEffect(() => {
@@ -102,7 +117,7 @@ function Cursor({ mode, label }: { mode: Mode; label: string }) {
 
     if (!enabled || reduced) return null;
 
-    const size = SIZES[mode];
+    const size = SIZES[mode] * scaleFactor;
     const isRich = mode === "view" || mode === "label";
 
     return (

@@ -12,6 +12,14 @@ import { ClosingCTA } from "@/components/sections/ClosingCTA";
 export default function ContactPage() {
   const [timeStr, setTimeStr] = React.useState("...");
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [formSubmitted, setFormSubmitted] = React.useState(false);
+  const [formData, setFormData] = React.useState({
+    name: "",
+    email: "",
+    subject: "Custom Build Inquiry",
+    message: ""
+  });
 
   // Live PKT time & open status
   React.useEffect(() => {
@@ -126,57 +134,114 @@ export default function ContactPage() {
             {/* Right: Contact Form */}
             <div className="lg:col-span-3">
               <div className="p-8 lg:p-10 rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)]">
-                <h2 className="text-2xl font-display font-bold mb-6">Send us a message</h2>
-                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="name" className="text-sm font-medium text-[var(--dc-text-muted)]">Name</label>
-                      <input 
-                        type="text" 
-                        id="name" 
-                        className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors"
-                        placeholder="John Doe"
-                      />
+                {formSubmitted ? (
+                  <div className="text-center py-8">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--dc-orange-dim)] text-[var(--dc-accent)] mb-4">
+                      <MessageCircle size={32} />
                     </div>
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-medium text-[var(--dc-text-muted)]">Email</label>
-                      <input 
-                        type="email" 
-                        id="email" 
-                        className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors"
-                        placeholder="john@example.com"
-                      />
+                    <h2 className="text-2xl font-display font-bold text-[var(--dc-text)] mb-2">Message Received!</h2>
+                    <p className="text-[var(--dc-text-muted)] max-w-md mx-auto mb-6">
+                      Thank you for contacting Daddu Charger. Our team in Rawalpindi typically responds within 2 business hours during operating hours.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        onClick={() => {
+                          setFormSubmitted(false);
+                          setFormData({ name: "", email: "", subject: "Custom Build Inquiry", message: "" });
+                        }}
+                      >
+                        Send Another Message
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="md"
+                        href={`https://wa.me/${BUSINESS.phone.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Chat on WhatsApp Now
+                      </Button>
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="subject" className="text-sm font-medium text-[var(--dc-text-muted)]">Subject</label>
-                    <select 
-                      id="subject"
-                      className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors appearance-none"
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-display font-bold mb-6">Send us a message</h2>
+                    <form 
+                      className="space-y-6" 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!formData.name || !formData.email || !formData.message) return;
+                        setIsSubmitting(true);
+                        setTimeout(() => {
+                          setIsSubmitting(false);
+                          setFormSubmitted(true);
+                        }, 800);
+                      }}
                     >
-                      <option>Custom Build Inquiry</option>
-                      <option>Order Support</option>
-                      <option>Product Availability</option>
-                      <option>Warranty Claim</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="message" className="text-sm font-medium text-[var(--dc-text-muted)]">Message</label>
-                    <textarea 
-                      id="message" 
-                      rows={5}
-                      className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors resize-none"
-                      placeholder="How can we help you?"
-                    ></textarea>
-                  </div>
-                  
-                  <Button type="submit" variant="primary" size="lg" className="w-full">
-                    Send Message
-                  </Button>
-                </form>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label htmlFor="name" className="text-sm font-medium text-[var(--dc-text-muted)]">Name *</label>
+                          <input 
+                            type="text" 
+                            id="name" 
+                            required
+                            value={formData.name}
+                            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                            className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors"
+                            placeholder="John Doe"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label htmlFor="email" className="text-sm font-medium text-[var(--dc-text-muted)]">Email *</label>
+                          <input 
+                            type="email" 
+                            id="email" 
+                            required
+                            value={formData.email}
+                            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                            className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors"
+                            placeholder="john@example.com"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label htmlFor="subject" className="text-sm font-medium text-[var(--dc-text-muted)]">Subject</label>
+                        <select 
+                          id="subject"
+                          value={formData.subject}
+                          onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
+                          className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors appearance-none"
+                        >
+                          <option>Custom Build Inquiry</option>
+                          <option>Order Support</option>
+                          <option>Product Availability</option>
+                          <option>Warranty Claim</option>
+                          <option>Other</option>
+                        </select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label htmlFor="message" className="text-sm font-medium text-[var(--dc-text-muted)]">Message *</label>
+                        <textarea 
+                          id="message" 
+                          rows={5}
+                          required
+                          value={formData.message}
+                          onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                          className="w-full bg-[var(--dc-bg)] border border-[var(--dc-border)] rounded-[var(--dc-radius-lg)] px-4 py-3 text-[var(--dc-text)] focus:border-[var(--dc-accent)] focus:outline-none transition-colors resize-none"
+                          placeholder="How can we help you?"
+                        ></textarea>
+                      </div>
+                      
+                      <Button type="submit" variant="primary" size="lg" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting ? "Sending..." : "Send Message"}
+                      </Button>
+                    </form>
+                  </>
+                )}
               </div>
             </div>
 

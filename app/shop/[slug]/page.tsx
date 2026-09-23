@@ -69,7 +69,7 @@ export default function ProductDetailPage({
     <>
       <SiteHeader />
       <PageShell>
-        <div ref={containerRef} className="dc-container pt-8 pb-24">
+        <div ref={containerRef} className="dc-container-wide pt-8 pb-24">
           
           <Link 
             href="/shop" 
@@ -84,7 +84,7 @@ export default function ProductDetailPage({
             <div className="product-image-container relative aspect-square w-full rounded-[var(--dc-radius-2xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)] overflow-hidden flex items-center justify-center p-8 lg:p-12">
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(200,255,0,0.08),transparent_70%)] opacity-50 pointer-events-none"
+                className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,106,26,0.10),transparent_70%)] opacity-50 pointer-events-none"
               />
               
               {/* Badges Overlay */}

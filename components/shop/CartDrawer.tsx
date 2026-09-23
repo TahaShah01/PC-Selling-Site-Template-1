@@ -4,6 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, MessageCircle } from "lucide-react";
+import { Button } from "@/components/primitives/Button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "@/lib/store/cart";
 import { formatPrice } from "@/lib/utils";
@@ -283,24 +284,45 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </div>
                   </div>
 
-                  {/* WhatsApp CTA — matches hero pill button style */}
-                  <button
-                    onClick={handleCheckout}
-                    className="group relative w-full flex items-center justify-between h-14 pl-6 pr-3 rounded-full bg-[var(--dc-accent)] text-[var(--dc-accent-text)] overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--dc-accent)]"
-                  >
-                    {/* Hover fill */}
-                    <span className="absolute inset-0 z-0 origin-bottom scale-y-0 bg-white/15 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100" />
-                    <span className="relative z-10 flex items-center gap-2 font-semibold text-sm">
-                      <MessageCircle size={16} />
-                      Order via WhatsApp
-                    </span>
-                    <span className="relative z-10 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--dc-accent-text)] text-[var(--dc-accent)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-[-45deg]">
-                      <ArrowRight size={15} />
-                    </span>
-                  </button>
+                  {/* Primary Checkout Button */}
+                  <Link href="/checkout" onClick={onClose} className="block w-full">
+                    <Button
+                      size="lg"
+                      variant="primary"
+                      className="w-full gap-2 shadow-[var(--dc-shadow-accent)]"
+                    >
+                      Proceed to Checkout
+                      <ArrowRight size={18} />
+                    </Button>
+                  </Link>
 
-                  <p className="text-[11px] text-center text-[var(--dc-text-subtle)] mt-3 leading-relaxed">
-                    We&apos;ll confirm your order, shipping cost & payment details over WhatsApp.
+                  <div className="relative my-4 flex items-center gap-4">
+                    <div className="h-px flex-1 bg-[var(--dc-border)]" />
+                    <span className="text-[10px] font-semibold uppercase text-[var(--dc-text-subtle)]">Or</span>
+                    <div className="h-px flex-1 bg-[var(--dc-border)]" />
+                  </div>
+
+                  {/* Secondary WhatsApp CTA */}
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="w-full gap-2 text-sm"
+                    onClick={handleCheckout}
+                  >
+                    <MessageCircle size={16} />
+                    Quick Order via WhatsApp
+                  </Button>
+
+                  <Link
+                    href="/cart"
+                    onClick={onClose}
+                    className="block text-center text-xs font-semibold text-[var(--dc-text-muted)] hover:text-[var(--dc-accent)] transition-colors mt-3 py-1.5"
+                  >
+                    View Full Cart Details →
+                  </Link>
+
+                  <p className="text-[11px] text-center text-[var(--dc-text-subtle)] mt-2 leading-relaxed">
+                    Secure checkout. We'll confirm your order and shipping details.
                   </p>
                 </motion.div>
               )}

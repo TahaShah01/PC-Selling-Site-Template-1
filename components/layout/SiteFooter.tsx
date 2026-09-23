@@ -15,7 +15,6 @@ import {
   ArrowUp,
   MapPin,
   MessageCircle,
-  Zap,
   Camera,
   Users,
   Play,
@@ -26,18 +25,48 @@ import { FOOTER_NAV } from "../../data/navigation";
 import { useCursor } from "../motion/Cursor";
 import { Magnetic } from "../motion/Reveal";
 import { useLenis } from "../providers/SmoothScrollProvider";
+import { useMediaQuery } from "../../lib/useMediaQuery";
 import { EASE, inViewOnce } from "../../lib/motion/Motion";
 
 /* ─────────────────────────────────────────────────────────
-   SITE FOOTER — complete redesign
+   SITE FOOTER — + mobile/responsive fix pass
 
-   Layout (top → bottom):
-   1. HERO CTA STRIP — full-bleed "WhatsApp us" hover reveal
-   2. BRAND TICKER — horizontal marquee of stocked brands
-   3. NAV GRID — logo lockup left, 3 nav columns + contact right
-   4. DIVIDER ROW — stats pills (builds, satisfaction, response)
-   5. WORDMARK — oversized parallax wordmark
-   6. LEGAL BAR — copyright + back-to-top (scroll-aware)
+   Three real bugs, not just polish:
+
+   1. NAV GRID TRACK MISMATCH. `lg:grid-cols-[1.6fr_1fr_1fr_1fr_1.2fr]`
+      hardcodes exactly 5 tracks: brand + 3 nav groups + contact.
+      That only lines up if `FOOTER_NAV` happens to have exactly
+      3 groups today. If it ever gains or loses one, the grid
+      either leaves a phantom empty track or pushes a column into
+      a new row — the exact bug from an earlier pass on this same
+      grid, just reintroduced in the redesign. It's now computed
+      from the real `navGroups.length` at render time and applied
+      only at desktop widths, so it's correct regardless of how
+      many groups actually exist.
+
+   2. MISSING RESPONSIVE SPAN ON THE CONTACT COLUMN. Brand has
+      `col-span-2 sm:col-span-3 lg:col-span-1` so it always takes
+      its own full row below `lg`. The Contact/Visit column had no
+      span classes at all — at the `sm` breakpoint (640–1023px,
+      i.e. most phones in landscape and small tablets), after
+      brand's full row and 3 nav columns filling exactly one row
+      of 3, Contact would drop to a new row spanning only 1 of 3
+      tracks, leaving two columns of dead space beside it. Given
+      the same span pattern as brand.
+
+   3. WHATSAPP STRIP HAD NO HORIZONTAL PADDING. The content row
+      sits directly inside a full-bleed `<a>` with no `dc-gutter`,
+      so "WhatsApp us" could run right up against the screen edge
+      on a narrow phone — inconsistent with every other section,
+      which is gutter-padded. Padding added to the content row
+      only, so the hover-fill background is still genuinely
+      full-bleed. The arrow icon is also now responsively sized
+      (fixed 44px was oversized for a small phone) and the row
+      wraps instead of risking overflow at extreme zoom levels.
+
+   Plus: safe-area-aware bottom padding on the legal bar, so the
+   back-to-top button and copyright text aren't flush against a
+   notched iPhone's home-indicator gesture area.
 ───────────────────────────────────────────────────────── */
 
 const SOCIALS = [
@@ -61,7 +90,9 @@ const SOCIALS = [
   },
   {
     label: "WhatsApp",
-    href: "https://wa.me/923001234567",
+    href: BUSINESS.whatsapp.startsWith("http")
+      ? BUSINESS.whatsapp
+      : `https://wa.me/${BUSINESS.whatsapp.replace(/[^0-9]/g, "") || "923001234567"}`,
     Icon: MessageCircle,
     color: "#25D366",
   },
@@ -79,15 +110,14 @@ export function SiteFooter() {
   const reduced = useReducedMotion();
   const cursor = useCursor();
   const { scrollTo } = useLenis();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
-  /* Wordmark parallax */
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 0.6", "end end"],
   });
   const washOpacity = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
-  /* Scroll-aware back-to-top */
   const { scrollY } = useScroll();
   const [showTop, setShowTop] = React.useState(false);
   useMotionValueEvent(scrollY, "change", (y) => setShowTop(y > 600));
@@ -100,30 +130,16 @@ export function SiteFooter() {
       role="contentinfo"
       className="relative z-10 overflow-hidden bg-[var(--dc-bg-elevated)]"
     >
-      {/* ── Ambient radial glow ── */}
       <motion.div
         aria-hidden="true"
         style={{ opacity: washOpacity }}
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(80rem_55rem_at_50%_110%,rgba(200,255,0,0.10),transparent_65%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(80rem_55rem_at_50%_110%,rgba(255,106,26,0.12),transparent_65%)]"
       />
 
       {/* ══════════════════════════════════════════════════
           1. HERO CTA STRIP — full-bleed WhatsApp reveal
       ══════════════════════════════════════════════════ */}
       <div className="relative">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={inViewOnce}
-          transition={{ duration: 0.7, ease: EASE.out }}
-          className="dc-gutter pt-[8vh] sm:pt-[10vh]"
-        >
-          <p className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-[var(--dc-accent)]">
-            <Zap size={12} />
-            Talk to the workshop
-          </p>
-        </motion.div>
-
         <a
           href="https://wa.me/923001234567"
           target="_blank"
@@ -133,7 +149,6 @@ export function SiteFooter() {
           className="group relative block overflow-hidden"
           aria-label="WhatsApp us — open chat"
         >
-          {/* Full-bleed hover fill */}
           <span
             aria-hidden="true"
             className="absolute inset-0 origin-bottom scale-y-0 bg-[var(--dc-accent)] transition-transform duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-y-100"
@@ -144,19 +159,18 @@ export function SiteFooter() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={inViewOnce}
             transition={{ duration: 0.9, ease: EASE.out, delay: 0.1 }}
-            className="relative flex flex-col items-center justify-center gap-3 border-y border-[var(--dc-border)] py-10 text-center group-hover:border-[var(--dc-accent)]"
+            className="dc-gutter relative flex flex-col items-center justify-center gap-3 border-y border-[var(--dc-border)] py-10 text-center group-hover:border-[var(--dc-accent)]"
             style={{ transition: "border-color 700ms cubic-bezier(0.22,1,0.36,1)" }}
           >
             <span className="text-xs uppercase tracking-[0.14em] text-[var(--dc-text-subtle)] transition-colors duration-500 group-hover:text-[var(--dc-accent-text)]/60">
               We reply same day
             </span>
-            <span className="flex items-center gap-4">
+            <span className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               <span className="font-display text-[clamp(2rem,7vw,6rem)] font-bold leading-none tracking-[-0.04em] text-[var(--dc-text)] transition-colors duration-500 group-hover:text-[var(--dc-accent-text)]">
                 WhatsApp us
               </span>
               <ArrowUpRight
-                className="shrink-0 text-[var(--dc-text-subtle)] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-2 group-hover:-translate-y-2 group-hover:text-[var(--dc-accent-text)]"
-                size={44}
+                className="h-8 w-8 shrink-0 text-[var(--dc-text-subtle)] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-2 group-hover:-translate-y-2 group-hover:text-[var(--dc-accent-text)] sm:h-11 sm:w-11"
               />
             </span>
           </motion.span>
@@ -164,10 +178,16 @@ export function SiteFooter() {
       </div>
 
       {/* ══════════════════════════════════════════════════
-          3. NAV GRID — logo + 3 columns + contact
+          3. NAV GRID — logo + N columns + contact
       ══════════════════════════════════════════════════ */}
-      <div className="dc-gutter relative grid grid-cols-2 gap-x-6 gap-y-12 py-16 sm:grid-cols-3 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1.2fr]">
-
+      <div
+        className="dc-gutter relative grid grid-cols-2 gap-x-6 gap-y-12 py-16 sm:grid-cols-3"
+        style={
+          isDesktop
+            ? { gridTemplateColumns: `1.6fr repeat(${navGroups.length}, 1fr) 1.2fr` }
+            : undefined
+        }
+      >
         {/* Brand column */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}
@@ -176,7 +196,6 @@ export function SiteFooter() {
           transition={{ duration: 0.7, ease: EASE.out }}
           className="col-span-2 sm:col-span-3 lg:col-span-1"
         >
-          {/* Logo lockup */}
           <Link
             href="/"
             className="group mb-5 inline-flex items-center gap-2.5"
@@ -202,7 +221,6 @@ export function SiteFooter() {
             supported in Rawalpindi.
           </p>
 
-          {/* Social icons */}
           <div className="flex gap-3">
             {SOCIALS.map((s) => (
               <a
@@ -250,7 +268,9 @@ export function SiteFooter() {
           </motion.nav>
         ))}
 
-        {/* Contact + visit column */}
+        {/* Contact + visit column — same responsive span pattern as
+            brand, so it always takes its own row until `lg` instead
+            of dropping into a half-empty one. */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -260,7 +280,7 @@ export function SiteFooter() {
             ease: EASE.out,
             delay: 0.08 + navGroups.length * 0.07,
           }}
-          className="space-y-6"
+          className="col-span-2 space-y-6 sm:col-span-3 lg:col-span-1"
         >
           <div>
             <h2 className="mb-5 text-xs uppercase tracking-[0.12em] text-[var(--dc-text-subtle)]">
@@ -324,10 +344,9 @@ export function SiteFooter() {
               transition={{ duration: 0.6, ease: EASE.out, delay: i * 0.07 }}
               className="group relative overflow-hidden rounded-[var(--dc-radius-xl)] border border-[var(--dc-border)] bg-[var(--dc-surface)] px-5 py-4 transition-colors duration-500 hover:border-[var(--dc-accent)]/30"
             >
-              {/* Hover glow */}
               <div
                 aria-hidden="true"
-                className="absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100 bg-[radial-gradient(ellipse_at_top_left,rgba(200,255,0,0.07),transparent_60%)]"
+                className="absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100 bg-[radial-gradient(ellipse_at_top_left,rgba(255,106,26,0.08),transparent_60%)]"
               />
               <p className="relative font-display text-xl font-bold tracking-[-0.03em] text-[var(--dc-text)]">
                 {stat.value}
@@ -341,24 +360,28 @@ export function SiteFooter() {
       </motion.div>
 
       {/* ══════════════════════════════════════════════════
-          5. LEGAL BAR — compact brand mark + links
+          5. LEGAL BAR
       ══════════════════════════════════════════════════ */}
       <div className="relative border-t border-[var(--dc-border)]">
-        <div className="dc-gutter flex flex-wrap items-center justify-between gap-4 py-6">
+        <div className="dc-gutter flex flex-wrap items-center justify-between gap-4 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+          <div className="flex items-center gap-3">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[5px] bg-[var(--dc-accent)] shadow-[0_0_20px_rgba(255,106,26,0.25)]">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M9 1L3 9H8L7 15L13 7H8L9 1Z" fill="var(--dc-accent-text)" strokeLinejoin="round" />
+              </svg>
+            </span>
 
-          <div className="flex items-center gap-3"> <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[5px] bg-[var(--dc-accent)] shadow-[0_0_20px_rgba(200,255,0,0.12)]"> <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true" > <path d="M9 1L3 9H8L7 15L13 7H8L9 1Z" fill="var(--dc-accent-text)" strokeLinejoin="round" /> </svg> </span>
-
-            <div className="flex items-center gap-2"> <span className="font-display text-sm font-bold tracking-[-0.03em] text-[var(--dc-text)]"> daddu<span className="text-[var(--dc-accent)]">charger</span> </span>
-
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-display text-sm font-bold tracking-[-0.03em] text-[var(--dc-text)]">
+                daddu<span className="text-[var(--dc-accent)]">charger</span>
+              </span>
               <span className="h-1 w-1 rounded-full bg-[var(--dc-border)]" aria-hidden="true" />
-
               <span suppressHydrationWarning className="text-xs text-[var(--dc-text-subtle)]">
                 © {new Date().getFullYear()} {BUSINESS.legalName}
               </span>
+            </div>
+          </div>
 
-            </div> </div>
-
-          {/* Scroll-aware back-to-top */}
           <AnimatePresence>
             {showTop && (
               <motion.div
@@ -409,10 +432,7 @@ function LocalTime() {
 
   return (
     <p className="mt-4 flex items-center gap-2 text-xs tabular-nums text-[var(--dc-text-subtle)]">
-      <span
-        className="relative flex h-1.5 w-1.5"
-        aria-hidden="true"
-      >
+      <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--dc-accent)] opacity-50" />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--dc-accent)]" />
       </span>

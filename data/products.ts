@@ -12,7 +12,7 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       {
         id: "img1",
-        src: "https://dlcdnwebimgs.asus.com/gain/DF37A4DD-1077-4AC3-AE04-2070D7C92461/w717/h525",
+        src: "/categories/gpus.jpg",
         alt: "ASUS ROG Strix GeForce RTX 4090",
       },
     ],
@@ -50,7 +50,7 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       {
         id: "img2",
-        src: "https://www.intel.com/content/dam/www/central-libraries/us/en/images/2023-09/intel-core-14th-gen-processor-box-badge-right-16x9.png.rendition.intel.web.480.270.png",
+        src: "/categories/cpus.jpg",
         alt: "Intel Core i9 14900K",
       },
     ],
@@ -86,7 +86,7 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       {
         id: "img3",
-        src: "https://lian-li.com/wp-content/uploads/2023/12/o11dergb-black-1.png",
+        src: "/categories/cases.png",
         alt: "Lian Li O11 Dynamic EVO RGB",
       },
     ],
@@ -122,7 +122,7 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       {
         id: "img4",
-        src: "https://cwsmgmt.corsair.com/pdp/rmx-shift-series/images/hero-1000w.png",
+        src: "/categories/cooling.jpg",
         alt: "Corsair RM1000x SHIFT",
       },
     ],
@@ -159,7 +159,7 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       {
         id: "img5",
-        src: "https://www.gskill.com/img/pr/Trident-Z5-RGB-Black-1-B.jpg",
+        src: "/categories/ram.jpg",
         alt: "G.SKILL Trident Z5 RGB 64GB",
       },
     ],
@@ -195,7 +195,7 @@ export const MOCK_PRODUCTS: Product[] = [
     images: [
       {
         id: "img6",
-        src: "https://images.samsung.com/is/image/samsung/p6pim/pk/mz-v9p2t0bw/gallery/pk-990-pro-nvme-m2-ssd-mz-v9p2t0bw-533582490?$684_547_PNG$",
+        src: "/categories/cooling.jpg",
         alt: "Samsung 990 PRO 2TB",
       },
     ],
@@ -229,7 +229,13 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "motherboards",
     priceRegular: 210000,
     currency: "PKR",
-    images: [],
+    images: [
+      {
+        id: "img7",
+        src: "/categories/motherboards.png",
+        alt: "ASUS ROG Maximus Z790 Dark Hero",
+      },
+    ],
     specs: {
       "Socket": "LGA 1700",
       "Chipset": "Intel Z790",
@@ -254,7 +260,13 @@ export const MOCK_PRODUCTS: Product[] = [
     category: "processors",
     priceRegular: 195000,
     currency: "PKR",
-    images: [],
+    images: [
+      {
+        id: "img8",
+        src: "/categories/cpus.jpg",
+        alt: "AMD Ryzen 9 7950X3D",
+      },
+    ],
     specs: {
       "Socket": "AM5",
       "Cores": "16",
@@ -271,5 +283,5 @@ export const MOCK_PRODUCTS: Product[] = [
     description: "The ultimate processor for gaming and creating, featuring AMD 3D V-Cache technology for massive gaming performance.",
     tags: ["AMD", "CPU", "AM5", "Ryzen 9"],
     publishedAt: new Date().toISOString(),
-  }
+  },
 ];

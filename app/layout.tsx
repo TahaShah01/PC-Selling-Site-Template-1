@@ -76,10 +76,20 @@ export const metadata: Metadata = {
   },
 };
 
+/* MOBILE FIX — viewportFit: "cover" lets the page draw edge-to-edge
+   behind the notch/home-indicator on notched phones, instead of
+   the browser auto-inserting a plain background band there. This
+   only matters if a fixed element (header, mobile menu) pads for
+   `env(safe-area-inset-*)`; without that padding, viewportFit alone
+   just risks content sitting under the notch. Flagging: if
+   SiteHeader / the mobile menu don't already add that padding,
+   send me those files and I'll add it — I don't have their current
+   content in this batch. */
 export const viewport: Viewport = {
   themeColor: "#080808",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 /* ─────────────────────────────────────────────────────────

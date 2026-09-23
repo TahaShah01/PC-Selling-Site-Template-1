@@ -1,62 +1,66 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { cn } from "../../lib/utils";
 
 /* ─────────────────────────────────────────────────────────
    BUTTON PRIMITIVE
    A fully accessible, design-token-driven button component.
+   Supports both native button actions and anchor links.
 ───────────────────────────────────────────────────────── */
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg" | "xl";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export const VARIANT_CLASSES: Record<ButtonVariant, string> = {
+  primary: "dc-btn-primary",
+  secondary: "dc-btn-secondary",
+  ghost: "dc-btn-ghost",
+  danger: "dc-btn-danger",
+};
+
+export const SIZE_CLASSES: Record<ButtonSize, string> = {
+  sm: "min-h-[36px] px-3 text-sm rounded-[var(--dc-radius-md)] gap-1.5",
+  md: "min-h-[42px] px-4 text-sm rounded-[var(--dc-radius-md)] gap-2",
+  lg: "min-h-[48px] px-6 text-base rounded-[var(--dc-radius-lg)] gap-2",
+  xl: "min-h-[54px] px-8 text-base rounded-[var(--dc-radius-lg)] gap-3",
+};
+
+export function buttonVariants({
+  variant = "primary",
+  size = "md",
+  className,
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
+} = {}) {
+  return cn(
+    "inline-flex items-center justify-center whitespace-nowrap transition-all duration-[var(--dc-duration-fast)] ease-[var(--dc-ease-out)] select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
+    VARIANT_CLASSES[variant],
+    SIZE_CLASSES[size],
+    className
+  );
+}
+
+export interface BaseButtonProps {
   variant?: ButtonVariant;
   size?: ButtonSize;
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   asChild?: boolean;
+  disabled?: boolean;
 }
 
-const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: [
-    "bg-[var(--dc-accent)] text-[var(--dc-accent-text)]",
-    "font-semibold",
-    "hover:bg-[var(--dc-accent-hover)] hover:scale-[1.02]",
-    "focus-visible:ring-2 focus-visible:ring-[var(--dc-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--dc-bg)]",
-    "shadow-[0_0_0_0_rgba(200,255,0,0)] hover:shadow-[var(--dc-shadow-accent)]",
-  ].join(" "),
-  secondary: [
-    "bg-transparent text-[var(--dc-text)]",
-    "border border-[var(--dc-border-strong)]",
-    "font-medium",
-    "hover:border-[var(--dc-accent)] hover:text-[var(--dc-accent)]",
-    "focus-visible:ring-2 focus-visible:ring-[var(--dc-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--dc-bg)]",
-  ].join(" "),
-  ghost: [
-    "bg-transparent text-[var(--dc-text-muted)]",
-    "font-medium",
-    "hover:bg-[var(--dc-surface)] hover:text-[var(--dc-text)]",
-    "focus-visible:ring-2 focus-visible:ring-[var(--dc-border-strong)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--dc-bg)]",
-  ].join(" "),
-  danger: [
-    "bg-[var(--dc-accent-2)] text-[var(--dc-accent-text)]",
-    "font-semibold",
-    "hover:bg-[var(--dc-accent-2-hover)] hover:scale-[1.02]",
-    "focus-visible:ring-2 focus-visible:ring-[var(--dc-accent-2)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--dc-bg)]",
-  ].join(" "),
-};
+export type ButtonProps = BaseButtonProps &
+  (
+    | (React.ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined })
+    | (React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string })
+  );
 
-const SIZE_CLASSES: Record<ButtonSize, string> = {
-  sm: "h-8 px-3 text-sm rounded-[var(--dc-radius-md)] gap-1.5",
-  md: "h-10 px-4 text-sm rounded-[var(--dc-radius-md)] gap-2",
-  lg: "h-12 px-6 text-base rounded-[var(--dc-radius-lg)] gap-2",
-  xl: "h-14 px-8 text-base rounded-[var(--dc-radius-lg)] gap-3",
-};
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+const Button = React.forwardRef<HTMLElement, ButtonProps>(
   (
     {
       className,
@@ -67,34 +71,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       rightIcon,
       children,
       disabled,
-      asChild, // Destructure to prevent spreading to DOM
+      asChild,
+      href,
       ...props
     },
     ref
   ) => {
-    return (
-      <button
-        ref={ref}
-        disabled={disabled || isLoading}
-        aria-disabled={disabled || isLoading}
-        className={cn(
-          // Base
-          "inline-flex items-center justify-center",
-          "whitespace-nowrap",
-          "transition-all",
-          "duration-[var(--dc-duration-fast)]",
-          "ease-[var(--dc-ease-out)]",
-          "select-none",
-          // Disabled
-          "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
-          // Variant
-          VARIANT_CLASSES[variant],
-          // Size
-          SIZE_CLASSES[size],
-          className
-        )}
-        {...props}
-      >
+    const classes = buttonVariants({ variant, size, className });
+
+    const content = (
+      <>
         {isLoading ? (
           <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
         ) : (
@@ -104,6 +90,44 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             {rightIcon && <span className="shrink-0">{rightIcon}</span>}
           </>
         )}
+      </>
+    );
+
+    if (href) {
+      const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:");
+      if (isExternal) {
+        return (
+          <a
+            ref={ref as React.Ref<HTMLAnchorElement>}
+            href={href}
+            className={classes}
+            {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+          >
+            {content}
+          </a>
+        );
+      }
+      return (
+        <Link
+          ref={ref as React.Ref<HTMLAnchorElement>}
+          href={href}
+          className={classes}
+          {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+        >
+          {content}
+        </Link>
+      );
+    }
+
+    return (
+      <button
+        ref={ref as React.Ref<HTMLButtonElement>}
+        disabled={disabled || isLoading}
+        aria-disabled={disabled || isLoading}
+        className={classes}
+        {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}
+      >
+        {content}
       </button>
     );
   }

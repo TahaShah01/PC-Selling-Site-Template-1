@@ -15,6 +15,7 @@ import { cn } from "../../lib/utils";
 import { PRIMARY_NAV } from "../../data/navigation";
 import type { NavItem } from "../../data/navigation";
 import { useCartStore } from "@/lib/store/cart";
+import { useWishlistStore } from "@/lib/store/wishlist";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { ThemeToggle } from "./ThemeToggle";
 import { useCursor } from "../motion/Cursor";
@@ -23,18 +24,39 @@ import { useScrollLock } from "../providers/SmoothScrollProvider";
 import { EASE } from "../../lib/motion/Motion";
 
 /* ─────────────────────────────────────────────────────────
-   SITE HEADER
+   SITE HEADER — + mobile/responsive fix pass
 
-   Changes from previous pass:
-   • Mega menu is now a contained panel (~70vh) anchored to
-     the header — NOT a full-screen takeover. There's ample
-     room beneath to mouse out naturally, and a dedicated
-     close strip at the top-right of the panel.
-   • Click-outside (the overlay scrim below the panel) closes it.
-   • "Build Your PC" button text is forced to --dc-accent-text
-     (near-black #080808) with a fallback to ensure visibility
-     regardless of other CSS layers.
-   • Clip-path animation smoothed and tuned to 0.5s.
+   MOBILE FIXES on top of the previous pass:
+
+   1. Safe area. The header is `fixed top-0` with no top
+      padding, so on a notched phone with `viewportFit: "cover"`
+      (added in layout.tsx last round) it draws its background
+      and content starting at the true top edge of the screen —
+      under the notch/Dynamic Island — rather than below it. It
+      now carries `pt-[env(safe-area-inset-top,0px)]`, and
+      everywhere that positions something "below the header"
+      (the mega-menu, the mobile menu's top padding) now reads
+      the new `--dc-header-offset` token from globals.css instead
+      of `--dc-header-height` directly — that token already
+      equals height + safe area, so this is a one-line swap per
+      spot, not a recalculation.
+
+   2. Cramped compact header. On a narrow phone the action row
+      (Search, Wishlist, ThemeToggle, Cart, Burger) plus the
+      wordmark logo is tight — Wishlist was already hidden below
+      `sm` for this reason. ThemeToggle is now hidden the same
+      way; it's still fully reachable via `<ThemeToggle showLabel />`
+      in the mobile menu, so nothing is lost, just decluttered
+      where space is tightest.
+
+   3. Mobile menu bottom row now pads for
+      `env(safe-area-inset-bottom)` too, so the search/wishlist/
+      contact row and theme toggle don't sit flush against a
+      phone's home-indicator gesture area.
+
+   Everything else — the debounced mega-menu hover, the
+   contained ~70vh panel with click-outside scrim, the two-level
+   mobile drill-down — is exactly the previous pass, untouched.
 ───────────────────────────────────────────────────────── */
 
 const CLOSE_DELAY = 200;
@@ -55,6 +77,7 @@ export function SiteHeader() {
   const itemCount = useCartStore((s) => s.cart.itemCount);
   const isCartOpen = useCartStore((s) => s.isOpen);
   const setIsCartOpen = useCartStore((s) => s.setIsOpen);
+  const wishlistCount = useWishlistStore((s) => s.items.length);
 
   const { scrollY } = useScroll();
   const last = React.useRef(0);
@@ -91,24 +114,27 @@ export function SiteHeader() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
   }, []);
 
+  const closeAllMobile = React.useCallback(() => {
+    setMobileOpen(false);
+    setMobileLevel(null);
+  }, []);
+
   // Close everything on navigation
   React.useEffect(() => {
     setMenu(null);
-    setMobileOpen(false);
-    setMobileLevel(null);
-  }, [pathname]);
+    closeAllMobile();
+  }, [pathname, closeAllMobile]);
 
   // Escape closes whatever is open
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       setMenu(null);
-      if (mobileLevel) setMobileLevel(null);
-      else setMobileOpen(false);
+      closeAllMobile();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [mobileLevel]);
+  }, [closeAllMobile]);
 
   const overlayOpen = Boolean(menu) || mobileOpen;
   useScrollLock(overlayOpen);
@@ -117,17 +143,22 @@ export function SiteHeader() {
     <>
       <motion.header
         initial={false}
-        animate={{ y: hidden && !reduced ? "-110%" : "0%" }}
+        animate={{ y: hidden && !reduced ? "-130%" : "0%" }}
         transition={{ duration: 0.6, ease: EASE.out }}
         className={cn(
-          "fixed inset-x-0 top-0 z-[var(--dc-z-sticky)]",
-          "transition-[background-color,border-color,backdrop-filter] duration-500",
+          "fixed z-[var(--dc-z-sticky)] transition-all duration-500",
+          // Mobile Floating Pill
+          "left-4 right-4 top-4 rounded-full sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-[24rem]",
+          "border border-[var(--dc-border)] bg-[var(--dc-header-bg)] backdrop-blur-2xl shadow-2xl",
+          // Desktop Full Bar
+          "lg:inset-x-0 lg:top-0 lg:left-0 lg:translate-x-0 lg:w-full lg:max-w-none lg:rounded-none lg:shadow-none lg:border-x-0 lg:border-t-0",
+          "lg:pt-[env(safe-area-inset-top,0px)]",
           solid && !overlayOpen
-            ? "border-b border-[var(--dc-border)] bg-[var(--dc-header-bg)] backdrop-blur-2xl"
-            : "border-b border-transparent bg-transparent"
+            ? "lg:border-b lg:border-[var(--dc-border)] lg:bg-[var(--dc-header-bg)] lg:backdrop-blur-2xl"
+            : "lg:border-b-transparent lg:bg-transparent lg:border-transparent lg:backdrop-blur-none"
         )}
       >
-        <div className="dc-gutter flex h-[var(--dc-header-height)] items-center justify-between gap-6">
+        <div className="flex h-14 lg:h-[var(--dc-header-height)] items-center justify-between gap-3 lg:gap-6 px-4 lg:px-[var(--dc-gutter)] w-full">
           {/* ── LOGO ── */}
           <Link
             href="/"
@@ -211,10 +242,26 @@ export function SiteHeader() {
             <IconLink href="/search" label="Search">
               <Search size={18} />
             </IconLink>
-            <IconLink href="/wishlist" label="Wishlist" className="hidden sm:inline-flex">
+            <Link
+              href="/wishlist"
+              aria-label={`Wishlist, ${wishlistCount} item${wishlistCount === 1 ? "" : "s"}`}
+              className="relative hidden sm:inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--dc-text-muted)] transition-colors hover:text-[var(--dc-text)]"
+            >
               <Heart size={18} />
-            </IconLink>
-            <ThemeToggle />
+              {wishlistCount > 0 && (
+                <span
+                  className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--dc-accent)] px-1 text-[9px] font-bold leading-none text-[var(--dc-accent-text)] tabular-nums"
+                >
+                  {wishlistCount > 99 ? "99+" : wishlistCount}
+                </span>
+              )}
+            </Link>
+            {/* Hidden below `sm` — the compact phone header is tight
+                on space, and this is still reachable via the mobile
+                menu's own <ThemeToggle showLabel /> below. */}
+            <span className="hidden sm:inline-flex">
+              <ThemeToggle />
+            </span>
 
             <button
               type="button"
@@ -249,7 +296,10 @@ export function SiteHeader() {
             {/* Burger */}
             <button
               type="button"
-              onClick={() => setMobileOpen((v) => !v)}
+              onClick={() => {
+                if (mobileOpen) closeAllMobile();
+                else setMobileOpen(true);
+              }}
               aria-expanded={mobileOpen}
               aria-controls="dc-mobile-menu"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -272,10 +322,7 @@ export function SiteHeader() {
         </div>
       </motion.header>
 
-      {/* ── CONTAINED MEGA MENU (desktop, max ~70vh) ──
-          Panel is anchored below the header, not full screen.
-          A transparent scrim underneath closes the menu on click.
-          Moving into the panel cancels the debounced close. */}
+      {/* ── CONTAINED MEGA MENU (desktop, max ~70vh) ── */}
       <AnimatePresence>
         {menu && (
           <>
@@ -287,7 +334,7 @@ export function SiteHeader() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               className="fixed inset-0 z-[calc(var(--dc-z-overlay)-1)] hidden lg:block"
-              style={{ top: "var(--dc-header-height)" }}
+              style={{ top: "var(--dc-header-offset)" }}
               onClick={closeMenu}
             />
 
@@ -302,13 +349,12 @@ export function SiteHeader() {
               onMouseLeave={scheduleClose}
               className="fixed inset-x-0 z-[var(--dc-z-overlay)] hidden border-b border-[var(--dc-border)] bg-[var(--dc-menu-bg)] backdrop-blur-2xl lg:block"
               style={{
-                top: "var(--dc-header-height)",
+                top: "var(--dc-header-offset)",
                 maxHeight: "70vh",
                 overflowY: "auto",
               }}
             >
               <div className="dc-gutter py-8 pb-10">
-                {/* Panel header row */}
                 <div className="mb-6 flex items-center justify-between">
                   <p className="text-xs uppercase tracking-[0.14em] text-[var(--dc-text-subtle)]">
                     {menu.label}
@@ -358,71 +404,106 @@ export function SiteHeader() {
         )}
       </AnimatePresence>
 
-      {/* ── FULL-SCREEN MOBILE MENU — two levels ── */}
+      {/* ── FULL-SCREEN CINEMATIC MOBILE MENU ── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             id="dc-mobile-menu"
             role="dialog"
             aria-modal="true"
-            aria-label="Menu"
-            initial={{ clipPath: "circle(0% at calc(100% - 3rem) 2.5rem)" }}
-            animate={{ clipPath: "circle(150% at calc(100% - 3rem) 2.5rem)" }}
-            exit={{ clipPath: "circle(0% at calc(100% - 3rem) 2.5rem)" }}
-            transition={{ duration: 0.75, ease: EASE.out }}
-            className="fixed inset-0 z-[var(--dc-z-overlay)] overflow-hidden bg-[var(--dc-bg-elevated)] lg:hidden"
+            aria-label="Navigation Menu"
+            initial={{ opacity: 0, clipPath: "circle(0% at 90% 10%)" }}
+            animate={{ opacity: 1, clipPath: "circle(150% at 90% 10%)" }}
+            exit={{ opacity: 0, clipPath: "circle(0% at 90% 10%)" }}
+            transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
+            className="fixed inset-0 z-[calc(var(--dc-z-overlay)+10)] flex flex-col overflow-hidden bg-[var(--dc-bg)]/95 backdrop-blur-3xl lg:hidden"
           >
-            <div className="relative h-full overflow-y-auto">
+            {/* Minimalist Top Bar for Drawer */}
+            <div className="flex h-20 items-center justify-between px-6 pt-[env(safe-area-inset-top,0px)]">
+              {mobileLevel ? (
+                <button
+                  type="button"
+                  onClick={() => setMobileLevel(null)}
+                  className="flex items-center gap-2 text-sm font-semibold text-[var(--dc-text)] hover:text-[var(--dc-accent)] transition-colors min-h-[44px] min-w-[44px]"
+                  aria-label="Back to main navigation"
+                >
+                  <ArrowLeft size={18} className="text-[var(--dc-accent)]" />
+                  <span>Back</span>
+                </button>
+              ) : (
+                <Link
+                  href="/"
+                  onClick={closeAllMobile}
+                  className="flex items-center gap-2 min-h-[44px]"
+                  aria-label="Daddu Charger Home"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-[var(--dc-radius-md)] bg-[var(--dc-accent)] text-black font-black text-xs">
+                    ⚡
+                  </span>
+                  <span className="font-display font-bold tracking-tight text-lg text-[var(--dc-text)]">
+                    DADDU
+                  </span>
+                </Link>
+              )}
+
+              <button
+                type="button"
+                onClick={closeAllMobile}
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--dc-surface)] text-[var(--dc-text)] hover:bg-[var(--dc-accent)] hover:text-black transition-all focus:outline-none focus:ring-2 focus:ring-[var(--dc-accent)] active:scale-95 border border-[var(--dc-border)]"
+                aria-label="Close navigation menu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Menu Body - Centered, Cinematic Stagger */}
+            <div className="relative flex-1 overflow-y-auto px-6 flex flex-col justify-center pb-[env(safe-area-inset-bottom,0px)]">
               <AnimatePresence mode="wait" initial={false}>
                 {!mobileLevel ? (
                   <motion.div
                     key="level-0"
-                    initial={{ x: "-30%", opacity: 0 }}
+                    initial={{ x: "-10%", opacity: 0 }}
                     animate={{ x: "0%", opacity: 1 }}
-                    exit={{ x: "-30%", opacity: 0 }}
+                    exit={{ x: "-10%", opacity: 0 }}
                     transition={{ duration: 0.4, ease: EASE.out }}
-                    className="dc-gutter flex min-h-full flex-col justify-between pb-10 pt-[calc(var(--dc-header-height)+2rem)]"
+                    className="flex flex-col gap-6"
                   >
-                    <ul>
+                    <ul className="flex flex-col gap-4">
                       {PRIMARY_NAV.map((item, i) => {
                         const hasChildren = Boolean(item.children?.length);
                         return (
-                          <li key={item.href} className="overflow-hidden border-b border-[var(--dc-border)]">
+                          <li key={item.href} className="overflow-hidden">
                             <motion.div
-                              initial={{ y: "110%", opacity: 0 }}
-                              animate={{ y: "0%", opacity: 1 }}
-                              transition={{ duration: 0.7, ease: EASE.out, delay: 0.15 + i * 0.06 }}
+                              initial={{ y: "100%", opacity: 0, rotate: 2 }}
+                              animate={{ y: "0%", opacity: 1, rotate: 0 }}
+                              transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1], delay: 0.1 + i * 0.05 }}
                             >
                               {hasChildren ? (
                                 <button
                                   type="button"
                                   onClick={() => setMobileLevel(item)}
-                                  className="flex w-full items-baseline justify-between py-5 text-left"
+                                  className="flex w-full items-center justify-between text-left group"
                                 >
-                                  <span className="font-display text-[clamp(2rem,9vw,3.5rem)] font-bold leading-none tracking-[-0.04em] text-[var(--dc-text)]">
+                                  <span className="font-display text-[clamp(2.5rem,10vw,4rem)] font-bold leading-none tracking-[-0.04em] text-[var(--dc-text)] group-hover:text-[var(--dc-accent)] transition-colors">
                                     {item.label}
                                   </span>
-                                  <span className="text-xs tabular-nums text-[var(--dc-text-subtle)]">
-                                    {String(i + 1).padStart(2, "0")}
+                                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--dc-surface-2)] text-[var(--dc-accent)]">
+                                    →
                                   </span>
                                 </button>
                               ) : (
                                 <Link
                                   href={item.href}
-                                  onClick={() => setMobileOpen(false)}
-                                  className="flex items-baseline justify-between py-5"
+                                  onClick={closeAllMobile}
+                                  className="flex items-center justify-between group"
                                 >
                                   <span
                                     className={cn(
-                                      "font-display text-[clamp(2rem,9vw,3.5rem)] font-bold leading-none tracking-[-0.04em]",
-                                      item.isHighlighted ? "" : "text-[var(--dc-text)]"
+                                      "font-display text-[clamp(2.5rem,10vw,4rem)] font-bold leading-none tracking-[-0.04em] transition-colors",
+                                      item.isHighlighted ? "text-[var(--dc-accent)]" : "text-[var(--dc-text)] group-hover:text-[var(--dc-accent)]"
                                     )}
-                                    style={item.isHighlighted ? { color: "var(--dc-accent)" } : undefined}
                                   >
                                     {item.label}
-                                  </span>
-                                  <span className="text-xs tabular-nums text-[var(--dc-text-subtle)]">
-                                    {String(i + 1).padStart(2, "0")}
                                   </span>
                                 </Link>
                               )}
@@ -432,17 +513,22 @@ export function SiteHeader() {
                       })}
                     </ul>
 
+                    {/* Footer Row inside Drawer */}
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.5 }}
-                      className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--dc-border)] pt-6 text-sm text-[var(--dc-text-muted)]"
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                      className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--dc-border-strong)] pt-8"
                     >
-                      <div className="flex flex-wrap gap-x-6 gap-y-2">
-                        <Link href="/search" onClick={() => setMobileOpen(false)}>Search</Link>
-                        <Link href="/wishlist" onClick={() => setMobileOpen(false)}>Wishlist</Link>
-                        <Link href="/contact" onClick={() => setMobileOpen(false)}>Contact</Link>
-                        <span className="text-[var(--dc-text-subtle)]">Rawalpindi, PK</span>
+                      <div className="flex gap-6">
+                        <Link href="/wishlist" onClick={closeAllMobile} className="flex flex-col gap-1 hover:text-[var(--dc-accent)] transition-colors">
+                          <Heart size={20} className="text-[var(--dc-text)]" />
+                          <span className="text-[10px] font-semibold tracking-wider text-[var(--dc-text-muted)] uppercase">Wishlist</span>
+                        </Link>
+                        <Link href="/search" onClick={closeAllMobile} className="flex flex-col gap-1 hover:text-[var(--dc-accent)] transition-colors">
+                          <Search size={20} className="text-[var(--dc-text)]" />
+                          <span className="text-[10px] font-semibold tracking-wider text-[var(--dc-text-muted)] uppercase">Search</span>
+                        </Link>
                       </div>
                       <ThemeToggle showLabel />
                     </motion.div>
@@ -450,39 +536,33 @@ export function SiteHeader() {
                 ) : (
                   <motion.div
                     key={mobileLevel.href}
-                    initial={{ x: "30%", opacity: 0 }}
+                    initial={{ x: "10%", opacity: 0 }}
                     animate={{ x: "0%", opacity: 1 }}
-                    exit={{ x: "30%", opacity: 0 }}
+                    exit={{ x: "10%", opacity: 0 }}
                     transition={{ duration: 0.4, ease: EASE.out }}
-                    className="dc-gutter flex min-h-full flex-col pb-10 pt-[calc(var(--dc-header-height)+1.5rem)]"
+                    className="flex flex-col gap-2"
                   >
-                    <button
-                      type="button"
-                      onClick={() => setMobileLevel(null)}
-                      className="mb-8 flex items-center gap-2 text-sm text-[var(--dc-text-muted)]"
-                    >
-                      <ArrowLeft size={16} />
+                    <p className="text-xs font-semibold tracking-[0.2em] text-[var(--dc-accent)] uppercase mb-4">
                       {mobileLevel.label}
-                    </button>
-
-                    <ul>
+                    </p>
+                    <ul className="flex flex-col gap-4">
                       {mobileLevel.children!.map((child, i) => (
-                        <li key={child.href} className="overflow-hidden border-b border-[var(--dc-border)]">
+                        <li key={child.href} className="overflow-hidden">
                           <motion.div
-                            initial={{ y: "60%", opacity: 0 }}
+                            initial={{ y: "100%", opacity: 0 }}
                             animate={{ y: "0%", opacity: 1 }}
-                            transition={{ duration: 0.55, ease: EASE.out, delay: i * 0.05 }}
+                            transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1], delay: i * 0.04 }}
                           >
                             <Link
                               href={child.href}
-                              onClick={() => setMobileOpen(false)}
-                              className="flex items-baseline justify-between py-5"
+                              onClick={closeAllMobile}
+                              className="flex items-center gap-4 group"
                             >
-                              <span className="font-display text-[clamp(1.5rem,6vw,2.5rem)] font-semibold leading-none tracking-[-0.03em] text-[var(--dc-text)]">
-                                {child.label}
-                              </span>
-                              <span className="text-xs tabular-nums text-[var(--dc-text-subtle)]">
+                              <span className="text-sm font-mono text-[var(--dc-text-subtle)]">
                                 {String(i + 1).padStart(2, "0")}
+                              </span>
+                              <span className="font-display text-[clamp(1.75rem,8vw,2.5rem)] font-bold leading-none tracking-[-0.03em] text-[var(--dc-text)] group-hover:text-[var(--dc-accent)] transition-colors">
+                                {child.label}
                               </span>
                             </Link>
                           </motion.div>

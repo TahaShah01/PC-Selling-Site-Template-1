@@ -148,7 +148,7 @@ export default function SearchPage() {
             className="pointer-events-none absolute inset-0"
             style={{
               background:
-                "radial-gradient(60rem 50rem at 50% 110%, rgba(200,255,0,0.07), transparent 65%)",
+                "radial-gradient(60rem 50rem at 50% 110%, rgba(255,106,26,0.10), transparent 65%)",
             }}
           />
           <div className="dc-container relative z-10 text-center pb-8">
